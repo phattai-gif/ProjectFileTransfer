@@ -1,6 +1,6 @@
 ﻿namespace ProjectFileTransferClient
 {
-    partial class Form1
+    partial class FrmConnect
     {
         /// <summary>
         ///  Required designer variable.

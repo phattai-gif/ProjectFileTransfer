@@ -1,8 +1,8 @@
 namespace ProjectFileTransferClient
 {
-    public partial class Form1 : Form
+    public partial class FrmConnect : Form
     {
-        public Form1()
+        public FrmConnect()
         {
             InitializeComponent();
         }
