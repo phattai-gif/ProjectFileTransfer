@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ProjectFileTransferServer.Services
 {
@@ -59,6 +61,27 @@ namespace ProjectFileTransferServer.Services
                 fileNames[i] = Path.GetFileName(fullPaths[i]);
             }
             return fileNames;
+        }
+        public string CalculateMD5(string fileName)
+        {
+            string filePath = Path.Combine(storageFolderPath, fileName);
+            if (!File.Exists(filePath)) return string.Empty;
+
+            using (var md5 = MD5.Create())
+            {
+                using (var stream = File.OpenRead(filePath))
+                {
+                    byte[] hashBytes = md5.ComputeHash(stream);
+
+                    // Chuyển mảng byte thu được thành chuỗi Hex (ký tự liền nhau)
+                    StringBuilder sb = new StringBuilder();
+                    foreach (byte b in hashBytes)
+                    {
+                        sb.Append(b.ToString("x2"));
+                    }
+                    return sb.ToString();
+                }
+            }
         }
 
     }

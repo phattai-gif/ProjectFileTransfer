@@ -47,19 +47,19 @@ namespace ProjectFileTransferServer.Network
                             break;
 
                         case Protocol.UPLOAD:
-                            ProcessUpload(parts);
+                            ReceiveFile(parts); 
                             break;
 
                         case Protocol.DOWNLOAD:
-                            ProcessDownload(parts);
+                            SendFile(parts);    
                             break;
 
                         case Protocol.LIST:
-                            ProcessList();
+                            SendFileList();     
                             break;
 
                         case Protocol.HASH:
-                            ProcessHash();
+                            ProcessHash(parts); // Truyền tham số parts để xử lý băm file
                             break;
                     }
                 }
@@ -77,13 +77,15 @@ namespace ProjectFileTransferServer.Network
             }
         }
 
+        //Connect
         private void ProcessConnect()
         {
             logCallback?.Invoke("Một Client vừa kết nối thành công.");
             writer.WriteLine("CONNECT_OK");
         }
 
-        private void ProcessUpload(string[] parts)
+        //Upload
+        private void ReceiveFile(string[] parts)
         {
             if (parts.Length < 3)
             {
@@ -130,7 +132,8 @@ namespace ProjectFileTransferServer.Network
             }
         }
 
-        private void ProcessDownload(string[] parts)
+        //Download
+        private void SendFile(string[] parts)
         {
             if (parts.Length < 2)
             {
@@ -177,12 +180,13 @@ namespace ProjectFileTransferServer.Network
             catch (Exception ex)
             {
                 logCallback?.Invoke($"[DOWNLOAD] Lỗi khi đang truyền file {fileName}: {ex.Message}");
-                // Lưu ý: Nếu đang truyền byte nửa chừng mà đứt mạng, kết nối sẽ văng vào catch này
             }
         }
-        private void ProcessList() 
+
+        //List
+        private void SendFileList()
         {
-            logCallback?.Invoke("[LIST] Client đang yêu cầu lấy danh sách file...");
+            logCallback?.Invoke("[LIST] Client đang yêu cầu lấy danh sách file... ");
 
             try
             {
@@ -206,6 +210,40 @@ namespace ProjectFileTransferServer.Network
                 logCallback?.Invoke($"[LIST] Lỗi khi xử lý gửi danh sách file: {ex.Message}");
             }
         }
-        private void ProcessHash() { }
+
+        //Hash
+        private void ProcessHash(string[] parts)
+        {
+            if (parts.Length < 2)
+            {
+                writer.WriteLine(Protocol.HASH_ERROR);
+                return;
+            }
+
+            string fileName = parts[1];
+            logCallback?.Invoke($"[HASH] Client yêu cầu tính mã hash cho file: '{fileName}'");
+
+            try
+            {
+                if (!fileManager.FileExists(fileName))
+                {
+                    writer.WriteLine(Protocol.HASH_ERROR);
+                    logCallback?.Invoke($"[HASH] Thất bại: File '{fileName}' không tồn tại để tính toán.");
+                    return;
+                }
+
+                // Thực hiện băm file
+                string hashResult = fileManager.CalculateMD5(fileName);
+
+                // Trả kết quả về cho Client
+                writer.WriteLine($"{Protocol.HASH_SUCCESS}{Protocol.DELIMITER}{hashResult}");
+                logCallback?.Invoke($"[HASH] Thành công: Đã gửi mã MD5 của file '{fileName}' ({hashResult})");
+            }
+            catch (Exception ex)
+            {
+                logCallback?.Invoke($"[HASH] Lỗi khi xử lý tính toán file: {ex.Message}");
+                writer.WriteLine(Protocol.HASH_ERROR);
+            }
+        }
     }
 }

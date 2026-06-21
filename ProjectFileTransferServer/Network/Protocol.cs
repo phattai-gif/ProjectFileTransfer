@@ -27,5 +27,9 @@ namespace ProjectFileTransferServer.Network
 
         //List
         public const string LIST_SUCCESS = "LIST_SUCCESS";
+
+        //Hash
+        public const string HASH_SUCCESS = "HASH_SUCCESS";
+        public const string HASH_ERROR = "HASH_ERROR";
     }
 }

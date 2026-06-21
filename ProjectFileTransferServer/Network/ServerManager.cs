@@ -20,7 +20,7 @@ namespace ProjectFileTransferServer.Network
             listener.Start();
             MessageBox.Show("Server started on port 8888");
 
-            Task.Run(() => AcceptClients());
+            Task.Run(() => AcceptClient());
         }
 
         public void StopServer()
@@ -32,24 +32,20 @@ namespace ProjectFileTransferServer.Network
             }
         }
 
-        public void AcceptClients()
+        //Connect
+        public void AcceptClient()
         {
             try
             {
                 while (listener != null)
                 {
                     TcpClient client = listener.AcceptTcpClient();
-
-                    // Truyền callback log vào từng client handler
                     ClientHandler handler = new ClientHandler(client, onLogReceived);
 
                     Task.Run(() => handler.HandleClient());
                 }
             }
-            catch (Exception)
-            {
-                // Khi stop server listener.AcceptTcpClient() sẽ ném ngoại lệ -> bỏ qua an toàn
-            }
+            catch (Exception) { }
         }
     }
 }
