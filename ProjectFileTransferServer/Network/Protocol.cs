@@ -24,5 +24,8 @@ namespace ProjectFileTransferServer.Network
         //Download
         public const string DOWNLOAD_SUCCESS = "DOWNLOAD_SUCCESS";
         public const string DOWNLOAD_ERROR = "DOWNLOAD_ERROR";
+
+        //List
+        public const string LIST_SUCCESS = "LIST_SUCCESS";
     }
 }

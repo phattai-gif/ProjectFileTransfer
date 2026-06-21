@@ -42,5 +42,24 @@ namespace ProjectFileTransferServer.Services
             string filePath = Path.Combine(storageFolderPath, fileName);
             return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
+        public string[] GetFileList()
+        {
+            if (!Directory.Exists(storageFolderPath))
+            {
+                return new string[0];
+            }
+
+            // Lấy toàn bộ đường dẫn file đầy đủ
+            string[] fullPaths = Directory.GetFiles(storageFolderPath);
+            string[] fileNames = new string[fullPaths.Length];
+
+            // Chỉ lọc lấy tên file và phần mở rộng (bỏ đường dẫn thư mục cha)
+            for (int i = 0; i < fullPaths.Length; i++)
+            {
+                fileNames[i] = Path.GetFileName(fullPaths[i]);
+            }
+            return fileNames;
+        }
+
     }
 }

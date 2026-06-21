@@ -180,7 +180,32 @@ namespace ProjectFileTransferServer.Network
                 // Lưu ý: Nếu đang truyền byte nửa chừng mà đứt mạng, kết nối sẽ văng vào catch này
             }
         }
-        private void ProcessList() { }
+        private void ProcessList() 
+        {
+            logCallback?.Invoke("[LIST] Client đang yêu cầu lấy danh sách file...");
+
+            try
+            {
+                // Lấy danh sách tên file từ FileManager
+                string[] files = fileManager.GetFileList();
+                // Khởi tạo chuỗi phản hồi
+                StringBuilder response = new StringBuilder(Protocol.LIST_SUCCESS);
+                // Ghép các tên file vào chuỗi
+                foreach (string file in files)
+                {
+                    response.Append(Protocol.DELIMITER);
+                    response.Append(file);
+                }
+                // Gửi toàn bộ chuỗi danh sách về cho Client trên một dòng
+                writer.WriteLine(response.ToString());
+
+                logCallback?.Invoke($"[LIST] Thành công: Đã gửi danh sách gồm {files.Length} file cho Client.");
+            }
+            catch (Exception ex)
+            {
+                logCallback?.Invoke($"[LIST] Lỗi khi xử lý gửi danh sách file: {ex.Message}");
+            }
+        }
         private void ProcessHash() { }
     }
 }
