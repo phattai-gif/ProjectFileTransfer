@@ -24,5 +24,23 @@ namespace ProjectFileTransferServer.Services
             string filePath = Path.Combine(storageFolderPath, fileName);
             return new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
         }
+
+        public bool FileExists(string fileName)
+        {
+            string filePath = Path.Combine(storageFolderPath, fileName);
+            return File.Exists(filePath);
+        }
+
+        public long GetFileSize(string fileName)
+        {
+            string filePath = Path.Combine(storageFolderPath, fileName);
+            return new FileInfo(filePath).Length;
+        }
+
+        public FileStream OpenFileStreamForRead(string fileName)
+        {
+            string filePath = Path.Combine(storageFolderPath, fileName);
+            return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        }
     }
 }

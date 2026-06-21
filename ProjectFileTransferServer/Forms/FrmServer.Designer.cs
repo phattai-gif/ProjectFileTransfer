@@ -39,12 +39,13 @@
             lstServerFiles = new ListBox();
             label5 = new Label();
             btnRefreshFiles = new Button();
+            btnDeleteFile = new Button();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(28, 201);
+            label1.Location = new Point(42, 137);
             label1.Name = "label1";
             label1.Size = new Size(118, 25);
             label1.TabIndex = 0;
@@ -53,7 +54,7 @@
             // txtStatus
             // 
             txtStatus.BackColor = SystemColors.ActiveCaption;
-            txtStatus.Location = new Point(28, 246);
+            txtStatus.Location = new Point(42, 182);
             txtStatus.Multiline = true;
             txtStatus.Name = "txtStatus";
             txtStatus.ReadOnly = true;
@@ -63,7 +64,7 @@
             // 
             // btnStartServer
             // 
-            btnStartServer.Location = new Point(286, 131);
+            btnStartServer.Location = new Point(281, 71);
             btnStartServer.Name = "btnStartServer";
             btnStartServer.Size = new Size(112, 34);
             btnStartServer.TabIndex = 2;
@@ -74,7 +75,7 @@
             // btnStopServer
             // 
             btnStopServer.Enabled = false;
-            btnStopServer.Location = new Point(425, 131);
+            btnStopServer.Location = new Point(421, 71);
             btnStopServer.Name = "btnStopServer";
             btnStopServer.Size = new Size(112, 34);
             btnStopServer.TabIndex = 3;
@@ -85,7 +86,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(28, 69);
+            label2.Location = new Point(42, 33);
             label2.Name = "label2";
             label2.Size = new Size(48, 25);
             label2.TabIndex = 4;
@@ -93,7 +94,7 @@
             // 
             // txtPort
             // 
-            txtPort.Location = new Point(99, 69);
+            txtPort.Location = new Point(96, 30);
             txtPort.Name = "txtPort";
             txtPort.ReadOnly = true;
             txtPort.Size = new Size(150, 31);
@@ -112,7 +113,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label4.Location = new Point(313, 9);
+            label4.Location = new Point(281, -2);
             label4.Name = "label4";
             label4.Size = new Size(280, 32);
             label4.TabIndex = 7;
@@ -122,7 +123,7 @@
             // lstServerFiles
             // 
             lstServerFiles.FormattingEnabled = true;
-            lstServerFiles.Location = new Point(466, 246);
+            lstServerFiles.Location = new Point(466, 182);
             lstServerFiles.Name = "lstServerFiles";
             lstServerFiles.Size = new Size(373, 204);
             lstServerFiles.TabIndex = 8;
@@ -130,7 +131,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(466, 201);
+            label5.Location = new Point(466, 137);
             label5.Name = "label5";
             label5.Size = new Size(217, 25);
             label5.TabIndex = 9;
@@ -138,12 +139,22 @@
             // 
             // btnRefreshFiles
             // 
-            btnRefreshFiles.Location = new Point(725, 192);
+            btnRefreshFiles.Location = new Point(522, 404);
             btnRefreshFiles.Name = "btnRefreshFiles";
             btnRefreshFiles.Size = new Size(114, 34);
             btnRefreshFiles.TabIndex = 10;
-            btnRefreshFiles.Text = "Refresh lists";
+            btnRefreshFiles.Text = "RefreshFile";
             btnRefreshFiles.UseVisualStyleBackColor = true;
+            // 
+            // btnDeleteFile
+            // 
+            btnDeleteFile.Location = new Point(678, 404);
+            btnDeleteFile.Name = "btnDeleteFile";
+            btnDeleteFile.Size = new Size(112, 34);
+            btnDeleteFile.TabIndex = 11;
+            btnDeleteFile.Text = "DeleteFile";
+            btnDeleteFile.UseVisualStyleBackColor = true;
+            btnDeleteFile.Click += btnDeleteFile_Click;
             // 
             // FrmServer
             // 
@@ -151,6 +162,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             ClientSize = new Size(857, 450);
+            Controls.Add(btnDeleteFile);
             Controls.Add(btnRefreshFiles);
             Controls.Add(label5);
             Controls.Add(lstServerFiles);
@@ -182,5 +194,6 @@
         private ListBox lstServerFiles;
         private Label label5;
         private Button btnRefreshFiles;
+        private Button btnDeleteFile;
     }
 }

@@ -51,7 +51,7 @@ namespace ProjectFileTransferServer.Network
                             break;
 
                         case Protocol.DOWNLOAD:
-                            ProcessDownload();
+                            ProcessDownload(parts);
                             break;
 
                         case Protocol.LIST:
@@ -130,7 +130,56 @@ namespace ProjectFileTransferServer.Network
             }
         }
 
-        private void ProcessDownload() { }
+        private void ProcessDownload(string[] parts)
+        {
+            if (parts.Length < 2)
+            {
+                writer.WriteLine(Protocol.DOWNLOAD_ERROR);
+                return;
+            }
+
+            string fileName = parts[1];
+
+            // Kiểm tra xem file Client muốn tải có trên Server không
+            if (!fileManager.FileExists(fileName))
+            {
+                logCallback?.Invoke($"[DOWNLOAD] Thất bại: Client yêu cầu file '{fileName}' không tồn tại.");
+                writer.WriteLine(Protocol.DOWNLOAD_ERROR);
+                return;
+            }
+
+            long fileSize = fileManager.GetFileSize(fileName);
+            logCallback?.Invoke($"[DOWNLOAD] Đang gửi file '{fileName}' ({fileSize} bytes) cho Client...");
+
+            try
+            {
+                // Bước 1: Gửi thông báo thành công kèm kích thước file bằng ký tự phân tách
+                writer.WriteLine($"{Protocol.DOWNLOAD_SUCCESS}{Protocol.DELIMITER}{fileSize}");
+
+                // Bước 2: Đọc file từ ổ đĩa
+                using (FileStream fs = fileManager.OpenFileStreamForRead(fileName))
+                {
+                    byte[] buffer = new byte[Protocol.BUFFER_SIZE];
+                    int bytesRead;
+
+                    // Đọc từ FileStream và ghi trực tiếp vào NetworkStream
+                    while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        stream.Write(buffer, 0, bytesRead);
+                    }
+
+                    // Đảm bảo dữ liệu được đẩy đi hết 
+                    stream.Flush();
+                }
+
+                logCallback?.Invoke($"[DOWNLOAD] Thành công: Đã gửi xong file '{fileName}'.");
+            }
+            catch (Exception ex)
+            {
+                logCallback?.Invoke($"[DOWNLOAD] Lỗi khi đang truyền file {fileName}: {ex.Message}");
+                // Lưu ý: Nếu đang truyền byte nửa chừng mà đứt mạng, kết nối sẽ văng vào catch này
+            }
+        }
         private void ProcessList() { }
         private void ProcessHash() { }
     }

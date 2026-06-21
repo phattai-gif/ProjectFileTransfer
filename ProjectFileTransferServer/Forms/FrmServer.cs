@@ -93,10 +93,37 @@ namespace ProjectFileTransferServer
             LoadServerFiles();
         }
 
-        // Sự kiện khi click vào nút "Làm mới danh sách"
+        // Làm mới danh sách
         private void btnRefreshFiles_Click(object sender, EventArgs e)
         {
             LoadServerFiles();
+        }
+
+        private void btnDeleteFile_Click(object sender, EventArgs e)
+        {
+            // Kiểm tra xem người dùng đã chọn file nào trong ListBox chưa
+            if (lstServerFiles.SelectedItem == null)
+            {
+                MessageBox.Show("Vui lòng chọn một file trong danh sách để xóa!");
+                return;
+            }
+
+            string selectedFile = lstServerFiles.SelectedItem.ToString();
+            string filePath = Path.Combine(storagePath, selectedFile);
+
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                    txtStatus.AppendText($"[{DateTime.Now:HH:mm:ss}] Đã xóa file: {selectedFile}\r\n");
+                    LoadServerFiles(); // Quét lại để cập nhật ListBox lập tức
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi xóa file: {ex.Message}");
+            }
         }
     }
 }

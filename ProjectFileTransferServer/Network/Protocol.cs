@@ -15,9 +15,14 @@ namespace ProjectFileTransferServer.Network
         public const string LIST = "LIST";
         public const string HASH = "HASH";
 
-        // Thêm trạng thái phản hồi và ký tự phân tách
+        public const char DELIMITER = '|';
+
+        // Upload
         public const string UPLOAD_SUCCESS = "UPLOAD_SUCCESS";
         public const string UPLOAD_ERROR = "UPLOAD_ERROR";
-        public const char DELIMITER = '|';
+
+        //Download
+        public const string DOWNLOAD_SUCCESS = "DOWNLOAD_SUCCESS";
+        public const string DOWNLOAD_ERROR = "DOWNLOAD_ERROR";
     }
 }
