@@ -9,9 +9,6 @@ namespace ProjectFileTransferClient
         {
             InitializeComponent();
             clientManager = new ClientManager();
-
-            btnConnect.Click += btnConnect_Click;
-            btnDisconnect.Click += btnDisconnect_Click;
         }
 
         private void FrmConnect_Load(object sender, EventArgs e)

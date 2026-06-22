@@ -12,7 +12,7 @@ namespace ProjectFileTransferServer.Network
         private TcpListener listener;
         private Action<string> onLogReceived;
 
-        // --- Ý 3: KHAI BÁO DANH SÁCH LƯU CLIENT PHÍA BACKEND ---
+        // --- KHAI BÁO DANH SÁCH LƯU CLIENT---
         private List<string> connectedClients = new List<string>();
         private Action<List<string>> onClientListChanged; // Callback cập nhật UI
 
@@ -39,7 +39,7 @@ namespace ProjectFileTransferServer.Network
                     var clientEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
                     string clientInfo = clientEndPoint != null ? clientEndPoint.ToString() : "Unknown";
 
-                    // --- Ý 3: LƯU CLIENT VÀO DANH SÁCH KHI KẾT NỐI ---
+                    // --- LƯU CLIENT VÀO DANH SÁCH KHI KẾT NỐI ---
                     lock (connectedClients)
                     {
                         connectedClients.Add(clientInfo);
@@ -58,7 +58,7 @@ namespace ProjectFileTransferServer.Network
             catch (Exception) { }
         }
 
-        // --- Ý 3: XÓA CLIENT KHỎI DANH SÁCH KHI ĐỨT KẾT NỐI ---
+        // --- XÓA CLIENT KHỎI DANH SÁCH KHI ĐỨT KẾT NỐI ---
         private void RemoveClient(string clientInfo)
         {
             lock (connectedClients)
