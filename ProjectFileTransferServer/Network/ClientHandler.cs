@@ -18,11 +18,14 @@ namespace ProjectFileTransferServer.Network
         // Bổ sung Action để truyền thông điệp log về cho UI
         private Action<string> logCallback;
 
-        public ClientHandler(TcpClient client, Action<string> logCallback)
+        private Action onDisconnected;
+
+        public ClientHandler(TcpClient client, Action<string> logCallback, Action onDisconnected)
         {
             this.client = client;
             this.stream = client.GetStream();
             this.logCallback = logCallback; // Nhận hàm log từ phía ngoài
+            this.onDisconnected = onDisconnected;
 
             reader = new StreamReader(stream, Encoding.UTF8);
             writer = new StreamWriter(stream, Encoding.UTF8);

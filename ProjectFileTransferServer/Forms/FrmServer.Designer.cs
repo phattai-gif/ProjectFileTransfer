@@ -40,6 +40,8 @@
             label5 = new Label();
             btnRefreshFiles = new Button();
             btnDeleteFile = new Button();
+            lstConnectedClients = new ListBox();
+            label6 = new Label();
             SuspendLayout();
             // 
             // label1
@@ -59,7 +61,7 @@
             txtStatus.Name = "txtStatus";
             txtStatus.ReadOnly = true;
             txtStatus.ScrollBars = ScrollBars.Vertical;
-            txtStatus.Size = new Size(387, 203);
+            txtStatus.Size = new Size(282, 186);
             txtStatus.TabIndex = 1;
             // 
             // btnStartServer
@@ -86,7 +88,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(42, 33);
+            label2.Location = new Point(42, 55);
             label2.Name = "label2";
             label2.Size = new Size(48, 25);
             label2.TabIndex = 4;
@@ -94,7 +96,7 @@
             // 
             // txtPort
             // 
-            txtPort.Location = new Point(96, 30);
+            txtPort.Location = new Point(96, 49);
             txtPort.Name = "txtPort";
             txtPort.ReadOnly = true;
             txtPort.Size = new Size(150, 31);
@@ -113,7 +115,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label4.Location = new Point(281, -2);
+            label4.Location = new Point(173, -2);
             label4.Name = "label4";
             label4.Size = new Size(280, 32);
             label4.TabIndex = 7;
@@ -123,15 +125,15 @@
             // lstServerFiles
             // 
             lstServerFiles.FormattingEnabled = true;
-            lstServerFiles.Location = new Point(466, 182);
+            lstServerFiles.Location = new Point(364, 343);
             lstServerFiles.Name = "lstServerFiles";
-            lstServerFiles.Size = new Size(373, 204);
+            lstServerFiles.Size = new Size(252, 79);
             lstServerFiles.TabIndex = 8;
             // 
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(466, 137);
+            label5.Location = new Point(364, 301);
             label5.Name = "label5";
             label5.Size = new Size(217, 25);
             label5.TabIndex = 9;
@@ -139,7 +141,7 @@
             // 
             // btnRefreshFiles
             // 
-            btnRefreshFiles.Location = new Point(522, 404);
+            btnRefreshFiles.Location = new Point(199, 388);
             btnRefreshFiles.Name = "btnRefreshFiles";
             btnRefreshFiles.Size = new Size(114, 34);
             btnRefreshFiles.TabIndex = 10;
@@ -148,7 +150,7 @@
             // 
             // btnDeleteFile
             // 
-            btnDeleteFile.Location = new Point(678, 404);
+            btnDeleteFile.Location = new Point(48, 388);
             btnDeleteFile.Name = "btnDeleteFile";
             btnDeleteFile.Size = new Size(112, 34);
             btnDeleteFile.TabIndex = 11;
@@ -156,12 +158,31 @@
             btnDeleteFile.UseVisualStyleBackColor = true;
             btnDeleteFile.Click += btnDeleteFile_Click;
             // 
+            // lstConnectedClients
+            // 
+            lstConnectedClients.FormattingEnabled = true;
+            lstConnectedClients.Location = new Point(364, 182);
+            lstConnectedClients.Name = "lstConnectedClients";
+            lstConnectedClients.Size = new Size(252, 104);
+            lstConnectedClients.TabIndex = 12;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(364, 137);
+            label6.Name = "label6";
+            label6.Size = new Size(252, 25);
+            label6.TabIndex = 13;
+            label6.Text = "Danh sách Client đang kết nối:";
+            // 
             // FrmServer
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
-            ClientSize = new Size(857, 450);
+            ClientSize = new Size(633, 445);
+            Controls.Add(label6);
+            Controls.Add(lstConnectedClients);
             Controls.Add(btnDeleteFile);
             Controls.Add(btnRefreshFiles);
             Controls.Add(label5);
@@ -195,5 +216,7 @@
         private Label label5;
         private Button btnRefreshFiles;
         private Button btnDeleteFile;
+        private ListBox lstConnectedClients;
+        private Label label6;
     }
 }

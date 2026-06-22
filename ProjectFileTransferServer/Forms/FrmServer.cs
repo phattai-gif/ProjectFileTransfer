@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using ProjectFileTransferServer.Network;
 
@@ -63,7 +64,11 @@ namespace ProjectFileTransferServer
 
         private void btnStartServer_Click(object sender, EventArgs e)
         {
-            serverManager.StartServer(UpdateServerLog);
+            serverManager.StartServer(
+                message => UpdateServerLog(message),
+                clients => UpdateClientListBox(clients)
+            );
+
             txtStatus.AppendText("Server started...\r\n");
             txtStatus.AppendText("Listening on port 8888...\r\n");
 
@@ -72,6 +77,22 @@ namespace ProjectFileTransferServer
 
             // Quét danh sách file hiện có ngay khi bật server lên
             LoadServerFiles();
+        }
+        // Hàm xử lý cập nhật giao diện ListBox Client an toàn đa luồng (Invoke)
+        private void UpdateClientListBox(List<string> clients)
+        {
+            if (lstConnectedClients.InvokeRequired)
+            {
+                lstConnectedClients.Invoke(new Action<List<string>>(UpdateClientListBox), clients);
+            }
+            else
+            {
+                lstConnectedClients.Items.Clear();
+                foreach (var client in clients)
+                {
+                    lstConnectedClients.Items.Add(client);
+                }
+            }
         }
 
         private void btnStopServer_Click(object sender, EventArgs e)
