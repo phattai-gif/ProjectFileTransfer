@@ -1,3 +1,4 @@
+using ProjectFileTransferClient.Forms;
 using ProjectFileTransferClient.Network;
 using System.Drawing;
 namespace ProjectFileTransferClient
@@ -7,7 +8,7 @@ namespace ProjectFileTransferClient
         private ClientManager clientManager;
         public FrmConnect()
         {
-            InitializeComponent();
+            InitializeComponent();  
             clientManager = new ClientManager();
         }
 
@@ -75,12 +76,18 @@ namespace ProjectFileTransferClient
 
             if (result)
             {
-                clientManager.SendMessage(txtUsername.Text); // send
-                lblStatus.Text = "🟢 Connected";
-                lblStatus.ForeColor = Color.Green;
+                clientManager.SendMessage("CONNECT");
 
-                btnConnect.Enabled = false;
-                btnDisconnect.Enabled = true;
+                string response =
+                    clientManager.ReceiveMessage();
+
+                MessageBox.Show(response);
+
+                FrmMain frm =
+                    new FrmMain(clientManager, this);
+
+                frm.Show();
+                this.Hide();
             }
             else
             {

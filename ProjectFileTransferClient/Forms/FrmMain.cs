@@ -5,41 +5,24 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using ProjectFileTransferClient.Network;
+using System.IO;
 
 namespace ProjectFileTransferClient.Forms
 {
     public partial class FrmMain : Form
     {
-        public FrmMain()
+        public FrmMain(ClientManager manager, FrmConnect connectForm)
         {
             InitializeComponent();
-        }
 
+            clientManager = manager;
+            frmConnect = connectForm;
+          
+        }
         private void FrmMain_Load(object sender, EventArgs e)
         {
-            dgvHistory.Rows.Add(
-     "BaoCao_DoAn.pdf",
-     "PDF",
-     "Upload thành công",
-     "09:48");
-
-            dgvHistory.Rows.Add(
-                "Video_HoiThao.mp4",
-                "MP4",
-                "Download 72%",
-                "10:15");
-
-            dgvHistory.Rows.Add(
-                "HinhAnh.zip",
-                "ZIP",
-                "Upload thành công",
-                "08:30");
-
-            dgvHistory.Rows.Add(
-                "TaiLieu.docx",
-                "DOCX",
-                "Download thành công",
-                "22:10");
+            LoadFileList();
             ////////////////
             dgvHistory.ColumnHeadersDefaultCellStyle.Font =
     new Font("Segoe UI", 10, FontStyle.Bold);
@@ -51,6 +34,53 @@ namespace ProjectFileTransferClient.Forms
 
             dgvHistory.EnableHeadersVisualStyles = false;
         }
+        //===========================================================//
+        private ClientManager clientManager;//khaibao clientManager
+        private FrmConnect frmConnect;
+        //===========================================================//
+        //đóng FrmMain thì hiện lại FrmConnect//
+        private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
+        }
+        //===========================================================//
+        //HÀM LOADFILELIST=========================================//
+        private void LoadFileList()
+        {
+            clientManager.SendMessage(Protocol.LIST);
+
+            string response =
+                clientManager.ReceiveMessage();
+
+            string[] parts =
+                response.Split(Protocol.DELIMITER);
+
+            if (parts[0] == Protocol.LIST_SUCCESS)
+            {
+                lvFiles.Items.Clear();
+
+                for (int i = 1; i < parts.Length; i++)
+                {
+                    string fileName = parts[i];
+
+                    ListViewItem item =
+                        new ListViewItem(fileName);
+
+                    item.SubItems.Add("-");
+                    item.SubItems.Add(
+                        Path.GetExtension(fileName));
+
+                    item.SubItems.Add(
+                        DateTime.Now.ToString("dd/MM/yyyy"));
+
+                    lvFiles.Items.Add(item);
+                }
+
+                lblTotalFiles.Text =
+                    (parts.Length - 1).ToString();
+            }
+        }
+        //===========================================================//
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -160,7 +190,23 @@ namespace ProjectFileTransferClient.Forms
 
         private void button3_Click(object sender, EventArgs e)
         {
+            clientManager.Disconnect();
 
+            frmConnect.Show();
+
+            this.Close();
+        }
+
+        private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            clientManager.Disconnect();
+
+            frmConnect.Show();
+        }
+
+        private void btnRefreshList_Click(object sender, EventArgs e)
+        {
+            LoadFileList();
         }
     }
 }

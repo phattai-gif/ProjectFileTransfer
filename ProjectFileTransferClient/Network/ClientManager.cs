@@ -60,7 +60,51 @@ namespace ProjectFileTransferClient.Network
                 return false;
             }
         }
+        //=============================================
+        //HÀM LẤY DANH SÁCH FILE
+        public string[] GetFileList()
+        {
+            try
+            {
+                writer?.WriteLine(Protocol.LIST);
 
+                string? response = reader?.ReadLine();
+
+                if (response == null)
+                    return new string[0];
+
+                string[] parts =
+                    response.Split(Protocol.DELIMITER);
+
+                if (parts[0] != Protocol.LIST_SUCCESS)
+                    return new string[0];
+
+                string[] files =
+                    new string[parts.Length - 1];
+
+                for (int i = 1; i < parts.Length; i++)
+                {
+                    files[i - 1] = parts[i];
+                }
+
+                return files;
+            }
+            catch
+            {
+                return new string[0];
+            }
+        }
+        //Hàm recivemessage===============================//
+        public string ReceiveMessage()
+        {
+            if (reader != null)
+            {
+                return reader.ReadLine() ?? "";
+            }
+
+            return "";
+        }
+        //===========================================
         public void Disconnect()
         {
             writer?.Close();
