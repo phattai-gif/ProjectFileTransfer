@@ -47,13 +47,10 @@
             pnlTopBar = new Panel();
             btnLogout2 = new Button();
             txtSearch = new TextBox();
-            btnRefreshTop = new Button();
-            btnDownloadTop = new Button();
-            btnUploadTop = new Button();
             pnlContent = new Panel();
-            button3 = new Button();
-            button2 = new Button();
-            button1 = new Button();
+            btnDisconnect = new Button();
+            btnRefreshList = new Button();
+            btnDownloadFile = new Button();
             btnUploaddown = new Button();
             grpHistory = new GroupBox();
             dgvHistory = new DataGridView();
@@ -88,7 +85,7 @@
             pnlElapsed = new Panel();
             lblElapsed = new Label();
             lblElapsedTitle = new Label();
-            panel1 = new Panel();
+            pnlSpeed = new Panel();
             lblSpeed = new Label();
             lblSpeedTitle = new Label();
             lblRemaining = new Label();
@@ -100,7 +97,7 @@
             pictureBox2 = new PictureBox();
             grpFileInfo = new GroupBox();
             lblPath = new Label();
-            grpConnectionInfo = new Label();
+            lblUploadTime = new Label();
             lblFileType = new Label();
             lblFileSize = new Label();
             lblUploadDate = new Label();
@@ -128,7 +125,7 @@
             pnlRemainTime.SuspendLayout();
             pnlState.SuspendLayout();
             pnlElapsed.SuspendLayout();
-            panel1.SuspendLayout();
+            pnlSpeed.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             grpFileInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
@@ -154,7 +151,7 @@
             pnlSidebar.Controls.Add(lblTitle);
             pnlSidebar.Location = new Point(0, 0);
             pnlSidebar.Name = "pnlSidebar";
-            pnlSidebar.Size = new Size(250, 852);
+            pnlSidebar.Size = new Size(337, 852);
             pnlSidebar.TabIndex = 0;
             // 
             // pnlConnection
@@ -164,7 +161,7 @@
             pnlConnection.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
             pnlConnection.Location = new Point(3, 587);
             pnlConnection.Name = "pnlConnection";
-            pnlConnection.Size = new Size(247, 262);
+            pnlConnection.Size = new Size(334, 262);
             pnlConnection.TabIndex = 0;
             // 
             // label1
@@ -336,78 +333,43 @@
             // pnlTopBar
             // 
             pnlTopBar.BackColor = Color.WhiteSmoke;
-            pnlTopBar.Controls.Add(btnLogout2);
+            pnlTopBar.Controls.Add(btnRefreshList);
             pnlTopBar.Controls.Add(txtSearch);
-            pnlTopBar.Controls.Add(btnRefreshTop);
-            pnlTopBar.Controls.Add(btnDownloadTop);
-            pnlTopBar.Controls.Add(btnUploadTop);
+            pnlTopBar.Controls.Add(btnDownloadFile);
+            pnlTopBar.Controls.Add(btnUploaddown);
             pnlTopBar.Location = new Point(250, 0);
             pnlTopBar.Name = "pnlTopBar";
-            pnlTopBar.Size = new Size(1215, 80);
+            pnlTopBar.Size = new Size(1302, 80);
             pnlTopBar.TabIndex = 1;
             // 
             // btnLogout2
             // 
             btnLogout2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            btnLogout2.BackColor = Color.Red;
             btnLogout2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnLogout2.ForeColor = SystemColors.ActiveCaptionText;
-            btnLogout2.Location = new Point(1049, 15);
+            btnLogout2.ForeColor = SystemColors.ButtonHighlight;
+            btnLogout2.Location = new Point(1398, 9);
             btnLogout2.Name = "btnLogout2";
-            btnLogout2.Size = new Size(137, 48);
+            btnLogout2.Size = new Size(142, 62);
             btnLogout2.TabIndex = 4;
             btnLogout2.Text = "Đăng xuất";
-            btnLogout2.UseVisualStyleBackColor = true;
+            btnLogout2.UseVisualStyleBackColor = false;
             // 
             // txtSearch
             // 
             txtSearch.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            txtSearch.Location = new Point(647, 23);
+            txtSearch.Location = new Point(659, 20);
             txtSearch.Multiline = true;
             txtSearch.Name = "txtSearch";
-            txtSearch.Size = new Size(300, 40);
+            txtSearch.Size = new Size(368, 48);
             txtSearch.TabIndex = 3;
             txtSearch.Text = "Tìm kiếm file...";
-            // 
-            // btnRefreshTop
-            // 
-            btnRefreshTop.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            btnRefreshTop.Location = new Point(422, 15);
-            btnRefreshTop.Name = "btnRefreshTop";
-            btnRefreshTop.Size = new Size(137, 48);
-            btnRefreshTop.TabIndex = 2;
-            btnRefreshTop.Text = "🔄 Refresh";
-            btnRefreshTop.UseVisualStyleBackColor = true;
-            // 
-            // btnDownloadTop
-            // 
-            btnDownloadTop.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            btnDownloadTop.Location = new Point(241, 15);
-            btnDownloadTop.Name = "btnDownloadTop";
-            btnDownloadTop.Size = new Size(137, 48);
-            btnDownloadTop.TabIndex = 1;
-            btnDownloadTop.Text = "Download";
-            btnDownloadTop.UseVisualStyleBackColor = true;
-            btnDownloadTop.Click += button2_Click_1;
-            // 
-            // btnUploadTop
-            // 
-            btnUploadTop.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            btnUploadTop.Location = new Point(68, 15);
-            btnUploadTop.Name = "btnUploadTop";
-            btnUploadTop.Size = new Size(137, 48);
-            btnUploadTop.TabIndex = 0;
-            btnUploadTop.Text = "📤 Upload";
-            btnUploadTop.UseVisualStyleBackColor = true;
-            btnUploadTop.Click += button2_Click;
             // 
             // pnlContent
             // 
             pnlContent.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pnlContent.BackColor = Color.White;
-            pnlContent.Controls.Add(button3);
-            pnlContent.Controls.Add(button2);
-            pnlContent.Controls.Add(button1);
-            pnlContent.Controls.Add(btnUploaddown);
+            pnlContent.Controls.Add(btnDisconnect);
             pnlContent.Controls.Add(grpHistory);
             pnlContent.Controls.Add(grpStatistics);
             pnlContent.Controls.Add(grpTransfer);
@@ -416,54 +378,54 @@
             pnlContent.ForeColor = SystemColors.Control;
             pnlContent.Location = new Point(250, 80);
             pnlContent.Name = "pnlContent";
-            pnlContent.Size = new Size(1215, 772);
+            pnlContent.Size = new Size(1302, 772);
             pnlContent.TabIndex = 2;
             // 
-            // button3
+            // btnDisconnect
             // 
-            button3.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            button3.BackColor = Color.Red;
-            button3.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button3.Location = new Point(884, 693);
-            button3.Name = "button3";
-            button3.Size = new Size(258, 59);
-            button3.TabIndex = 6;
-            button3.Text = "DISCONNECT";
-            button3.UseVisualStyleBackColor = false;
-            button3.Click += button3_Click;
+            btnDisconnect.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnDisconnect.BackColor = Color.Red;
+            btnDisconnect.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnDisconnect.Location = new Point(93, 693);
+            btnDisconnect.Name = "btnDisconnect";
+            btnDisconnect.Size = new Size(1105, 59);
+            btnDisconnect.TabIndex = 6;
+            btnDisconnect.Text = "DISCONNECT";
+            btnDisconnect.UseVisualStyleBackColor = false;
+            btnDisconnect.Click += button3_Click;
             // 
-            // button2
+            // btnRefreshList
             // 
-            button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            button2.BackColor = Color.RoyalBlue;
-            button2.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button2.Location = new Point(606, 693);
-            button2.Name = "button2";
-            button2.Size = new Size(254, 59);
-            button2.TabIndex = 5;
-            button2.Text = "🔄 REFERECH";
-            button2.UseVisualStyleBackColor = false;
+            btnRefreshList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnRefreshList.BackColor = Color.RoyalBlue;
+            btnRefreshList.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnRefreshList.Location = new Point(421, 10);
+            btnRefreshList.Name = "btnRefreshList";
+            btnRefreshList.Size = new Size(178, 59);
+            btnRefreshList.TabIndex = 5;
+            btnRefreshList.Text = "🔄 REFERECH";
+            btnRefreshList.UseVisualStyleBackColor = false;
             // 
-            // button1
+            // btnDownloadFile
             // 
-            button1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            button1.BackColor = Color.FromArgb(255, 128, 0);
-            button1.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button1.Location = new Point(320, 693);
-            button1.Name = "button1";
-            button1.Size = new Size(260, 59);
-            button1.TabIndex = 4;
-            button1.Text = "📤 DOWNLOAD FILE";
-            button1.UseVisualStyleBackColor = false;
+            btnDownloadFile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnDownloadFile.BackColor = Color.FromArgb(255, 128, 0);
+            btnDownloadFile.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnDownloadFile.Location = new Point(218, 9);
+            btnDownloadFile.Name = "btnDownloadFile";
+            btnDownloadFile.Size = new Size(183, 59);
+            btnDownloadFile.TabIndex = 4;
+            btnDownloadFile.Text = "📤 DOWNLOAD ";
+            btnDownloadFile.UseVisualStyleBackColor = false;
             // 
             // btnUploaddown
             // 
             btnUploaddown.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnUploaddown.BackColor = Color.ForestGreen;
             btnUploaddown.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnUploaddown.Location = new Point(24, 691);
+            btnUploaddown.Location = new Point(17, 10);
             btnUploaddown.Name = "btnUploaddown";
-            btnUploaddown.Size = new Size(271, 59);
+            btnUploaddown.Size = new Size(186, 59);
             btnUploaddown.TabIndex = 3;
             btnUploaddown.Text = "📤 UPLOAD FILE";
             btnUploaddown.UseVisualStyleBackColor = false;
@@ -474,7 +436,7 @@
             grpHistory.Controls.Add(dgvHistory);
             grpHistory.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpHistory.ForeColor = Color.RoyalBlue;
-            grpHistory.Location = new Point(711, 443);
+            grpHistory.Location = new Point(798, 443);
             grpHistory.Name = "grpHistory";
             grpHistory.Size = new Size(478, 237);
             grpHistory.TabIndex = 2;
@@ -542,7 +504,7 @@
             grpStatistics.Controls.Add(pnlTotalFile);
             grpStatistics.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpStatistics.ForeColor = Color.RoyalBlue;
-            grpStatistics.Location = new Point(711, 242);
+            grpStatistics.Location = new Point(798, 242);
             grpStatistics.Name = "grpStatistics";
             grpStatistics.Size = new Size(478, 210);
             grpStatistics.TabIndex = 2;
@@ -745,7 +707,7 @@
             grpTransfer.Controls.Add(pnlRemainTime);
             grpTransfer.Controls.Add(pnlState);
             grpTransfer.Controls.Add(pnlElapsed);
-            grpTransfer.Controls.Add(panel1);
+            grpTransfer.Controls.Add(pnlSpeed);
             grpTransfer.Controls.Add(lblRemaining);
             grpTransfer.Controls.Add(lblTransferred);
             grpTransfer.Controls.Add(lblPercent);
@@ -757,7 +719,7 @@
             grpTransfer.ForeColor = Color.RoyalBlue;
             grpTransfer.Location = new Point(15, 398);
             grpTransfer.Name = "grpTransfer";
-            grpTransfer.Size = new Size(681, 272);
+            grpTransfer.Size = new Size(768, 272);
             grpTransfer.TabIndex = 2;
             grpTransfer.TabStop = false;
             grpTransfer.Text = "TIẾN TRÌNH TRUYỀN FILE";
@@ -765,6 +727,7 @@
             // 
             // pnlRemainTime
             // 
+            pnlRemainTime.BackColor = Color.WhiteSmoke;
             pnlRemainTime.Controls.Add(lblRemainTime);
             pnlRemainTime.Controls.Add(lblRemainTitle);
             pnlRemainTime.Location = new Point(344, 183);
@@ -797,6 +760,7 @@
             // 
             // pnlState
             // 
+            pnlState.BackColor = Color.WhiteSmoke;
             pnlState.Controls.Add(lblState);
             pnlState.Controls.Add(lblStateTitle);
             pnlState.Location = new Point(508, 182);
@@ -828,6 +792,7 @@
             // 
             // pnlElapsed
             // 
+            pnlElapsed.BackColor = Color.WhiteSmoke;
             pnlElapsed.Controls.Add(lblElapsed);
             pnlElapsed.Controls.Add(lblElapsedTitle);
             pnlElapsed.Location = new Point(180, 183);
@@ -858,14 +823,15 @@
             lblElapsedTitle.Text = "Thời gian đã truyền";
             lblElapsedTitle.Click += label3_Click;
             // 
-            // panel1
+            // pnlSpeed
             // 
-            panel1.Controls.Add(lblSpeed);
-            panel1.Controls.Add(lblSpeedTitle);
-            panel1.Location = new Point(6, 184);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(167, 68);
-            panel1.TabIndex = 8;
+            pnlSpeed.BackColor = Color.WhiteSmoke;
+            pnlSpeed.Controls.Add(lblSpeed);
+            pnlSpeed.Controls.Add(lblSpeedTitle);
+            pnlSpeed.Location = new Point(6, 184);
+            pnlSpeed.Name = "pnlSpeed";
+            pnlSpeed.Size = new Size(167, 68);
+            pnlSpeed.TabIndex = 8;
             // 
             // lblSpeed
             // 
@@ -963,7 +929,7 @@
             // 
             grpFileInfo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             grpFileInfo.Controls.Add(lblPath);
-            grpFileInfo.Controls.Add(grpConnectionInfo);
+            grpFileInfo.Controls.Add(lblUploadTime);
             grpFileInfo.Controls.Add(lblFileType);
             grpFileInfo.Controls.Add(lblFileSize);
             grpFileInfo.Controls.Add(lblUploadDate);
@@ -971,7 +937,7 @@
             grpFileInfo.Controls.Add(pictureBox1);
             grpFileInfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpFileInfo.ForeColor = Color.RoyalBlue;
-            grpFileInfo.Location = new Point(711, 10);
+            grpFileInfo.Location = new Point(798, 10);
             grpFileInfo.Name = "grpFileInfo";
             grpFileInfo.Size = new Size(478, 228);
             grpFileInfo.TabIndex = 1;
@@ -990,16 +956,16 @@
             lblPath.TabIndex = 5;
             lblPath.Text = "Đường dẫn    :";
             // 
-            // grpConnectionInfo
+            // lblUploadTime
             // 
-            grpConnectionInfo.AutoSize = true;
-            grpConnectionInfo.Font = new Font("Microsoft Sans Serif", 8.25F);
-            grpConnectionInfo.ForeColor = Color.FromArgb(0, 0, 64);
-            grpConnectionInfo.Location = new Point(181, 172);
-            grpConnectionInfo.Name = "grpConnectionInfo";
-            grpConnectionInfo.Size = new Size(126, 20);
-            grpConnectionInfo.TabIndex = 4;
-            grpConnectionInfo.Text = "Ngày upload    :";
+            lblUploadTime.AutoSize = true;
+            lblUploadTime.Font = new Font("Microsoft Sans Serif", 8.25F);
+            lblUploadTime.ForeColor = Color.FromArgb(0, 0, 64);
+            lblUploadTime.Location = new Point(181, 172);
+            lblUploadTime.Name = "lblUploadTime";
+            lblUploadTime.Size = new Size(126, 20);
+            lblUploadTime.TabIndex = 4;
+            lblUploadTime.Text = "Ngày upload    :";
             // 
             // lblFileType
             // 
@@ -1064,7 +1030,7 @@
             grpFileList.ForeColor = Color.RoyalBlue;
             grpFileList.Location = new Point(19, 10);
             grpFileList.Name = "grpFileList";
-            grpFileList.Size = new Size(673, 382);
+            grpFileList.Size = new Size(760, 382);
             grpFileList.TabIndex = 0;
             grpFileList.TabStop = false;
             grpFileList.Text = "DANH SÁCH FILE TRÊN SERVER";
@@ -1078,7 +1044,7 @@
             lvFiles.GridLines = true;
             lvFiles.Location = new Point(3, 30);
             lvFiles.Name = "lvFiles";
-            lvFiles.Size = new Size(667, 349);
+            lvFiles.Size = new Size(754, 349);
             lvFiles.TabIndex = 0;
             lvFiles.UseCompatibleStateImageBehavior = false;
             lvFiles.View = View.Details;
@@ -1087,29 +1053,30 @@
             // columnHeader1
             // 
             columnHeader1.Text = "Tên File";
-            columnHeader1.Width = 250;
+            columnHeader1.Width = 260;
             // 
             // columnHeader2
             // 
             columnHeader2.Text = "Kích Thước";
-            columnHeader2.Width = 120;
+            columnHeader2.Width = 140;
             // 
             // columnHeader3
             // 
             columnHeader3.Text = " Loại File";
-            columnHeader3.Width = 100;
+            columnHeader3.Width = 110;
             // 
             // columnHeader4
             // 
             columnHeader4.Text = "Ngày Upload";
-            columnHeader4.Width = 180;
+            columnHeader4.Width = 210;
             // 
             // FrmMain
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.WhiteSmoke;
-            ClientSize = new Size(1465, 852);
+            ClientSize = new Size(1552, 852);
+            Controls.Add(btnLogout2);
             Controls.Add(pnlContent);
             Controls.Add(pnlTopBar);
             Controls.Add(pnlSidebar);
@@ -1145,8 +1112,8 @@
             pnlState.PerformLayout();
             pnlElapsed.ResumeLayout(false);
             pnlElapsed.PerformLayout();
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
+            pnlSpeed.ResumeLayout(false);
+            pnlSpeed.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             grpFileInfo.ResumeLayout(false);
             grpFileInfo.PerformLayout();
@@ -1174,9 +1141,6 @@
         private Button btnSettings;
         private Panel pnlConnection;
         private Label label1;
-        private Button btnUploadTop;
-        private Button btnRefreshTop;
-        private Button btnDownloadTop;
         private TextBox txtSearch;
         private Button btnLogout2;
         private GroupBox grpFileList;
@@ -1194,11 +1158,11 @@
         private Label lblFileSize;
         private Label lblUploadDate;
         private Label lblPath;
-        private Label grpConnectionInfo;
+        private Label lblUploadTime;
         private Button btnUploaddown;
-        private Button button3;
-        private Button button2;
-        private Button button1;
+        private Button btnDisconnect;
+        private Button btnRefreshList;
+        private Button btnDownloadFile;
         private Panel pnlTotalFile;
         private Label lblIconFile;
         private Label lblTextFile;
@@ -1225,7 +1189,7 @@
         private Panel pnlElapsed;
         private Label lblElapsed;
         private Label lblElapsedTitle;
-        private Panel panel1;
+        private Panel pnlSpeed;
         private Label lblSpeed;
         private Label lblSpeedTitle;
         private Label lblRemaining;

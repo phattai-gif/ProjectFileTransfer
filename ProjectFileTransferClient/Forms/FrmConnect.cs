@@ -64,7 +64,7 @@ namespace ProjectFileTransferClient
 
         }
         //Tao hàm connect
-        private void btnConnect_Click(object sender, EventArgs e)
+        private void btnConnect_Click(object? sender, EventArgs e)
         {
             string ip = txtIP.Text.Trim();
 
@@ -78,6 +78,7 @@ namespace ProjectFileTransferClient
 
             if (result)
             {
+                clientManager.SendMessage(txtUsername.Text); // send
                 lblStatus.Text = "🟢 Connected";
                 lblStatus.ForeColor = Color.Green;
 
@@ -91,7 +92,7 @@ namespace ProjectFileTransferClient
             }
         }
         //Ham disconnect
-        private void btnDisconnect_Click(object sender, EventArgs e)
+        private void btnDisconnect_Click(object? sender, EventArgs e)
         {
             clientManager.Disconnect();
 

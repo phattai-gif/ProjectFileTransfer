@@ -1,10 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using System.Net.Sockets;
 
 namespace ProjectFileTransferClient.Network
 {
-    internal class FileSender
+    public class FileSender
     {
+        public void SendFile(
+            string filePath,
+            NetworkStream stream)
+        {
+
+        }
     }
 }

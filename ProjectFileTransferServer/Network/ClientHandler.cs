@@ -73,6 +73,8 @@ namespace ProjectFileTransferServer.Network
             }
             finally
             {
+                onDisconnected?.Invoke();
+
                 reader.Close();
                 writer.Close();
                 stream.Close();
@@ -234,7 +236,7 @@ namespace ProjectFileTransferServer.Network
                     logCallback?.Invoke($"[HASH] Thất bại: File '{fileName}' không tồn tại để tính toán.");
                     return;
                 }
-
+                    
                 // Thực hiện băm file
                 string hashResult = fileManager.CalculateMD5(fileName);
 
