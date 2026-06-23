@@ -18,7 +18,7 @@ namespace ProjectFileTransferClient.Forms
 
             clientManager = manager;
             frmConnect = connectForm;
-          
+
         }
         private void FrmMain_Load(object sender, EventArgs e)
         {
@@ -47,35 +47,69 @@ namespace ProjectFileTransferClient.Forms
         //HÀM LOADFILELIST=========================================//
         private void LoadFileList()
         {
+            // Gửi lệnh LIST sang Server để yêu cầu danh sách file
             clientManager.SendMessage(Protocol.LIST);
 
-            string response =
-                clientManager.ReceiveMessage();
+            // Nhận chuỗi phản hồi từ Server
+            string response = clientManager.ReceiveMessage();
 
-            string[] parts =
-                response.Split(Protocol.DELIMITER);
+            // Tách dữ liệu dựa theo ký tự phân cách (# hoặc ký tự DELIMITER)
+            string[] parts = response.Split(Protocol.DELIMITER);
 
+            // Kiểm tra Server trả về thành công
             if (parts[0] == Protocol.LIST_SUCCESS)
             {
+                // Xóa danh sách cũ trên ListView
                 lvFiles.Items.Clear();
 
+                // Bắt đầu đọc từng file từ Server
                 for (int i = 1; i < parts.Length; i++)
                 {
-                    string fileName = parts[i];
+                    // Ví dụ dữ liệu nhận:
+                    // abc.pdf|24576
 
+                    string[] fileInfo =
+                        parts[i].Split('|');
+
+                    // Tên file
+                    string fileName =
+                        fileInfo[0];
+
+                    // Giá trị mặc định nếu không có kích thước
+                    string fileSize = "0 KB";
+
+                    // Nếu Server gửi kích thước
+                    if (fileInfo.Length > 1)
+                    {
+                        long size =
+                            long.Parse(fileInfo[1]);
+
+                        // Đổi Byte sang KB
+                        fileSize =
+                            (size / 1024.0)
+                            .ToString("F2") + " KB";
+                    }
+
+                    // Tạo dòng mới trong ListView
                     ListViewItem item =
                         new ListViewItem(fileName);
 
-                    item.SubItems.Add("-");
+                    // Cột Kích thước
+                    item.SubItems.Add(fileSize);
+
+                    // Cột Loại file (.pdf .docx ...)
                     item.SubItems.Add(
                         Path.GetExtension(fileName));
 
+                    // Cột ngày upload
                     item.SubItems.Add(
                         DateTime.Now.ToString("dd/MM/yyyy"));
 
+                    // Thêm dòng vào ListView
                     lvFiles.Items.Add(item);
                 }
 
+                // Hiển thị tổng số file
                 lblTotalFiles.Text =
                     (parts.Length - 1).ToString();
             }
@@ -207,6 +241,49 @@ namespace ProjectFileTransferClient.Forms
         private void btnRefreshList_Click(object sender, EventArgs e)
         {
             LoadFileList();
+        }
+
+        private void btnRefreshList_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnUploaddown_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog open = new OpenFileDialog();
+
+            if (open.ShowDialog() == DialogResult.OK)
+            {
+                MessageBox.Show("Đã chọn: " + open.FileName);
+            }
+        }
+
+        private void btnDownloadFile_Click(object sender, EventArgs e)
+        {
+            if (lvFiles.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Chọn file cần tải.");
+                return;
+            }
+
+            string fileName =
+                lvFiles.SelectedItems[0].Text;
+
+            MessageBox.Show("Download: " + fileName);
+        }
+
+        private void btnLogout2_Click(object sender, EventArgs e)
+        {
+            clientManager.Disconnect();
+
+            frmConnect.Show();
+
+            this.Close();
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

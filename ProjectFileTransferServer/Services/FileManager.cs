@@ -46,21 +46,51 @@ namespace ProjectFileTransferServer.Services
         }
         public string[] GetFileList()
         {
+            //Kiểm tra thư mục Storage (Kiểm tra thư mục Storage có tồn tại không.Nếu không có thì trả về mảng rỗng.)
             if (!Directory.Exists(storageFolderPath))
-            {
                 return new string[0];
+            //Lấy tất cả file
+            string[] files = Directory.GetFiles(storageFolderPath);
+            //Tạo mảng kết quả
+            string[] result = new string[files.Length];
+
+            for (int i = 0; i < files.Length; i++)
+            {
+                //đọc thông tin file
+                FileInfo info = new FileInfo(files[i]);
+
+                result[i] =
+                    info.Name + "|" +
+                    info.Length;
             }
 
-            // Lấy toàn bộ đường dẫn file đầy đủ
-            string[] fullPaths = Directory.GetFiles(storageFolderPath);
-            string[] fileNames = new string[fullPaths.Length];
+            return result;
+        }
+        // ======================================================
+        // HÀM LẤY DANH SÁCH FILE KÈM KÍCH THƯỚC TỪ THƯ MỤC STORAGe
+        public string[] GetFileListWithSize()
+        {
+            // Lấy toàn bộ đường dẫn file trong Storage
+            string[] fullPaths =
+                Directory.GetFiles(storageFolderPath);
 
-            // Chỉ lọc lấy tên file và phần mở rộng (bỏ đường dẫn thư mục cha)
+            // Mảng kết quả gửi về Client
+            string[] result =
+                new string[fullPaths.Length];
+
+            // Duyệt từng file
             for (int i = 0; i < fullPaths.Length; i++)
             {
-                fileNames[i] = Path.GetFileName(fullPaths[i]);
+                // Lấy thông tin file
+                FileInfo info =
+                    new FileInfo(fullPaths[i]);
+
+                // Ghép tên file và kích thước
+                result[i] =
+                    info.Name + "|" + info.Length;
             }
-            return fileNames;
+
+            return result;
         }
         public string CalculateMD5(string fileName)
         {

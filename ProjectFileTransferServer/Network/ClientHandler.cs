@@ -195,8 +195,11 @@ namespace ProjectFileTransferServer.Network
 
             try
             {
-                // Lấy danh sách tên file từ FileManager
-                string[] files = fileManager.GetFileList();
+                // ===================================================
+                // LẤY DANH SÁCH FILE VÀ KÍCH THƯỚC TỪ FILEMANAGER
+                // ===================================================
+                string[] files =
+                    fileManager.GetFileListWithSize();
                 // Khởi tạo chuỗi phản hồi
                 StringBuilder response = new StringBuilder(Protocol.LIST_SUCCESS);
                 // Ghép các tên file vào chuỗi
@@ -204,6 +207,7 @@ namespace ProjectFileTransferServer.Network
                 {
                     response.Append(Protocol.DELIMITER);
                     response.Append(file);
+
                 }
                 // Gửi toàn bộ chuỗi danh sách về cho Client trên một dòng
                 writer.WriteLine(response.ToString());

@@ -78,15 +78,12 @@ namespace ProjectFileTransferClient
             {
                 clientManager.SendMessage("CONNECT");
 
-                string response =
-                    clientManager.ReceiveMessage();
+                lblStatus.Text = "🟢 Connected";
+                lblStatus.ForeColor = Color.Green;
 
-                MessageBox.Show(response);
-
-                FrmMain frm =
-                    new FrmMain(clientManager, this);
-
+                FrmMain frm = new FrmMain(clientManager, this);
                 frm.Show();
+
                 this.Hide();
             }
             else
