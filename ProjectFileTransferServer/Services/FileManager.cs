@@ -59,9 +59,7 @@ namespace ProjectFileTransferServer.Services
                 //đọc thông tin file
                 FileInfo info = new FileInfo(files[i]);
 
-                result[i] =
-                    info.Name + "|" +
-                    info.Length;
+                result[i] = info.Name + "|" + info.Length;
             }
 
             return result;
@@ -71,23 +69,19 @@ namespace ProjectFileTransferServer.Services
         public string[] GetFileListWithSize()
         {
             // Lấy toàn bộ đường dẫn file trong Storage
-            string[] fullPaths =
-                Directory.GetFiles(storageFolderPath);
+            string[] fullPaths = Directory.GetFiles(storageFolderPath);
 
             // Mảng kết quả gửi về Client
-            string[] result =
-                new string[fullPaths.Length];
+            string[] result = new string[fullPaths.Length];
 
             // Duyệt từng file
             for (int i = 0; i < fullPaths.Length; i++)
             {
                 // Lấy thông tin file
-                FileInfo info =
-                    new FileInfo(fullPaths[i]);
+                FileInfo info = new FileInfo(fullPaths[i]);
 
                 // Ghép tên file và kích thước
-                result[i] =
-                    info.Name + "|" + info.Length;
+                result[i] = info.Name + "|" + info.Length;
             }
 
             return result;

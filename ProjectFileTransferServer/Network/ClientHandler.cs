@@ -198,8 +198,7 @@ namespace ProjectFileTransferServer.Network
                 // ===================================================
                 // LẤY DANH SÁCH FILE VÀ KÍCH THƯỚC TỪ FILEMANAGER
                 // ===================================================
-                string[] files =
-                    fileManager.GetFileListWithSize();
+                string[] files = fileManager.GetFileListWithSize();
                 // Khởi tạo chuỗi phản hồi
                 StringBuilder response = new StringBuilder(Protocol.LIST_SUCCESS);
                 // Ghép các tên file vào chuỗi
