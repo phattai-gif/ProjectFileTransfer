@@ -238,7 +238,6 @@
             btnRefresh.TabIndex = 7;
             btnRefresh.Text = "🔄 Refresh";
             btnRefresh.UseVisualStyleBackColor = false;
-           
             // 
             // btnHistory
             // 
@@ -352,9 +351,8 @@
             btnRefreshList.Name = "btnRefreshList";
             btnRefreshList.Size = new Size(178, 59);
             btnRefreshList.TabIndex = 5;
-            btnRefreshList.Text = "🔄 REFERECH";
+            btnRefreshList.Text = "🔄 REFRESH";
             btnRefreshList.UseVisualStyleBackColor = false;
-            Load += FrmMain_Load;
             // 
             // txtSearch
             // 

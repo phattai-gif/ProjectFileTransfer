@@ -250,11 +250,30 @@ namespace ProjectFileTransferClient.Forms
 
         private void btnUploaddown_Click(object sender, EventArgs e)
         {
-            OpenFileDialog open = new OpenFileDialog();
-
-            if (open.ShowDialog() == DialogResult.OK)
             {
-                MessageBox.Show("Đã chọn: " + open.FileName);
+                OpenFileDialog open =
+                    new OpenFileDialog();
+
+                if (open.ShowDialog() ==
+                    DialogResult.OK)
+                {
+                    bool result =
+                        clientManager.UploadFile(
+                            open.FileName);
+
+                    if (result)
+                    {
+                        MessageBox.Show(
+                            "Upload thành công.");
+
+                        LoadFileList();
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            "Upload thất bại.");
+                    }
+                }
             }
         }
 
@@ -262,15 +281,41 @@ namespace ProjectFileTransferClient.Forms
         {
             if (lvFiles.SelectedItems.Count == 0)
             {
-                MessageBox.Show("Chọn file cần tải.");
+                MessageBox.Show(
+                    "Chọn file cần tải.");
+
                 return;
             }
 
             string fileName =
                 lvFiles.SelectedItems[0].Text;
 
-            MessageBox.Show("Download: " + fileName);
+            SaveFileDialog save =
+                new SaveFileDialog();
+
+            save.FileName = fileName;
+
+            if (save.ShowDialog()
+                == DialogResult.OK)
+            {
+                bool result =
+                    clientManager.DownloadFile(
+                        fileName,
+                        save.FileName);
+
+                if (result)
+                {
+                    MessageBox.Show(
+                        "Download thành công.");
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Download thất bại.");
+                }
+            }
         }
+        
 
         private void btnLogout2_Click(object sender, EventArgs e)
         {

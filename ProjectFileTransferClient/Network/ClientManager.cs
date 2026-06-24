@@ -105,6 +105,112 @@ namespace ProjectFileTransferClient.Network
             return "";
         }
         //===========================================
+        //================================================
+        // HÀM UPLOAD FILE LÊN SERVER
+        public bool UploadFile(string filePath)
+        {
+            try
+            {
+                if (writer == null || client == null)
+                    return false;
+
+                FileInfo file = new FileInfo(filePath);
+
+                string fileName = file.Name;
+                long fileSize = file.Length;
+
+                // Gửi lệnh upload
+                writer.WriteLine(
+                    $"{Protocol.UPLOAD}" +
+                    $"{Protocol.DELIMITER}" +
+                    $"{fileName}" +
+                    $"{Protocol.DELIMITER}" +
+                    $"{fileSize}");
+
+                // Gửi dữ liệu file
+                using (FileStream fs =
+                       new FileStream(filePath,
+                       FileMode.Open,
+                       FileAccess.Read))
+                {
+                    byte[] buffer = new byte[Protocol.BUFFER_SIZE];
+
+                    int bytesRead;
+
+                    NetworkStream stream =
+                        client.GetStream();
+
+                    while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        stream.Write(buffer, 0, bytesRead);
+                    }
+
+                    stream.Flush();
+                }
+
+                string response = reader?.ReadLine() ?? "";
+
+                MessageBox.Show("Response = [" + response + "]");
+
+                return response.Trim()==Protocol.UPLOAD_SUCCESS;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return false;
+            }
+        }
+        //================================================
+        // HÀM DOWNLOAD FILE TỪ SERVER
+        public bool DownloadFile(string fileName,
+                                 string savePath)
+        {
+            try
+            {
+                writer?.WriteLine(
+                    $"{Protocol.DOWNLOAD}" +
+                    $"{Protocol.DELIMITER}" +
+                    $"{fileName}");
+
+                string response = reader?.ReadLine() ?? "";
+                string[] parts =
+                    response.Split(Protocol.DELIMITER);
+
+                if (parts[0] != Protocol.DOWNLOAD_SUCCESS)
+                    return false;
+
+                long fileSize =long.Parse(parts[1]);
+
+                long totalRead = 0;
+
+                byte[] buffer = new byte[Protocol.BUFFER_SIZE];
+
+                NetworkStream stream =client!.GetStream();
+
+                using (FileStream fs = new FileStream(savePath, FileMode.Create))
+                {
+                    while (totalRead < fileSize)
+                    {
+                        int bytesToRead = (int)Math.Min( buffer.Length,fileSize - totalRead);
+
+                        int bytesRead = stream.Read( buffer,0,bytesToRead);
+
+                        if (bytesRead == 0)
+                            break;
+
+                        fs.Write( buffer,0,bytesRead);
+
+                        totalRead += bytesRead;
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public void Disconnect()
         {
             writer?.Close();
