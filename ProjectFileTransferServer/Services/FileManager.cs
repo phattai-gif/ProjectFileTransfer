@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -65,7 +66,7 @@ namespace ProjectFileTransferServer.Services
             return result;
         }
         // ======================================================
-        // HÀM LẤY DANH SÁCH FILE KÈM KÍCH THƯỚC TỪ THƯ MỤC STORAGe
+        // HÀM LẤY DANH SÁCH FILE KÈM KÍCH THƯỚC TỪ THƯ MỤC STORAGE
         public string[] GetFileListWithSize()
         {
             // Lấy toàn bộ đường dẫn file trong Storage
@@ -86,16 +87,16 @@ namespace ProjectFileTransferServer.Services
 
             return result;
         }
-        public string CalculateMD5(string fileName)
+        public string CalculateSHA256(string fileName)
         {
             string filePath = Path.Combine(storageFolderPath, fileName);
             if (!File.Exists(filePath)) return string.Empty;
 
-            using (var md5 = MD5.Create())
+            using (var sha256 = SHA256.Create())
             {
                 using (var stream = File.OpenRead(filePath))
                 {
-                    byte[] hashBytes = md5.ComputeHash(stream);
+                    byte[] hashBytes = sha256.ComputeHash(stream);
 
                     // Chuyển mảng byte thu được thành chuỗi Hex (ký tự liền nhau)
                     StringBuilder sb = new StringBuilder();

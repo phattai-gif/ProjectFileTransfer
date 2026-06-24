@@ -108,6 +108,7 @@ namespace ProjectFileTransferServer.Network
             {
                 using (FileStream fs = fileManager.CreateFileStream(fileName))
                 {
+                    // Đọc dữ liệu file theo từng khối nhỏ (chunk)
                     byte[] buffer = new byte[Protocol.BUFFER_SIZE];
                     long totalBytesRead = 0;
                     int bytesRead;
@@ -241,11 +242,11 @@ namespace ProjectFileTransferServer.Network
                 }
                     
                 // Thực hiện băm file
-                string hashResult = fileManager.CalculateMD5(fileName);
+                string hashResult = fileManager.CalculateSHA256(fileName);
 
                 // Trả kết quả về cho Client
                 writer.WriteLine($"{Protocol.HASH_SUCCESS}{Protocol.DELIMITER}{hashResult}");
-                logCallback?.Invoke($"[HASH] Thành công: Đã gửi mã MD5 của file '{fileName}' ({hashResult})");
+                logCallback?.Invoke($"[HASH] Thành công: Đã gửi mã SHA256 của file '{fileName}' ({hashResult})");
             }
             catch (Exception ex)
             {
