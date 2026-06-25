@@ -24,8 +24,10 @@ namespace ProjectFileTransferClient.Forms
         {
             LoadFileList();
             ////////////////
+            // LoadFileList();
+
             dgvHistory.ColumnHeadersDefaultCellStyle.Font =
-    new Font("Segoe UI", 10, FontStyle.Bold);
+                new Font("Segoe UI", 10, FontStyle.Bold);
 
             dgvHistory.DefaultCellStyle.Font =
                 new Font("Segoe UI", 10);
@@ -47,6 +49,7 @@ namespace ProjectFileTransferClient.Forms
         //HÀM LOADFILELIST=========================================//
         private void LoadFileList()
         {
+          
             // Gửi lệnh LIST sang Server để yêu cầu danh sách file
             clientManager.SendMessage(Protocol.LIST);
 
@@ -65,11 +68,10 @@ namespace ProjectFileTransferClient.Forms
                 // Bắt đầu đọc từng file từ Server
                 for (int i = 1; i < parts.Length; i++)
                 {
-                    // Ví dụ dữ liệu nhận:
+                    // Ví dụ dữ liệu nhận:btnRefreshList.Text = "🔄 REFRESH";
                     // abc.pdf|24576
 
-                    string[] fileInfo =
-                        parts[i].Split('|');
+                    string[] fileInfo =parts[i].Split('#');
 
                     // Tên file
                     string fileName =
@@ -81,13 +83,22 @@ namespace ProjectFileTransferClient.Forms
                     // Nếu Server gửi kích thước
                     if (fileInfo.Length > 1)
                     {
-                        long size =
-                            long.Parse(fileInfo[1]);
+                        long size = long.Parse(fileInfo[1]);
 
-                        // Đổi Byte sang KB
-                        fileSize =
-                            (size / 1024.0)
-                            .ToString("F2") + " KB";
+                        if (size < 1024)
+                        {
+                            fileSize = size + " B";
+                        }
+                        else if (size < 1024 * 1024)
+                        {
+                            fileSize =
+                                (size / 1024.0).ToString("F2") + " KB";
+                        }
+                        else
+                        {
+                            fileSize =
+                                (size / 1024.0 / 1024.0).ToString("F2") + " MB";
+                        }
                     }
 
                     // Tạo dòng mới trong ListView

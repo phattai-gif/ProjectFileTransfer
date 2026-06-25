@@ -278,6 +278,7 @@
             btnDownload.TabIndex = 4;
             btnDownload.Text = "📥 Download";
             btnDownload.UseVisualStyleBackColor = false;
+            btnDownloadFile.Click += btnDownloadFile_Click;
             // 
             // btnUpload
             // 
@@ -353,6 +354,7 @@
             btnRefreshList.TabIndex = 5;
             btnRefreshList.Text = "🔄 REFRESH";
             btnRefreshList.UseVisualStyleBackColor = false;
+            btnRefreshList.Click += btnRefreshList_Click;
             // 
             // txtSearch
             // 
