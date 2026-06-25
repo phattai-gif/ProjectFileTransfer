@@ -238,7 +238,6 @@
             btnRefresh.TabIndex = 7;
             btnRefresh.Text = "🔄 Refresh";
             btnRefresh.UseVisualStyleBackColor = false;
-           
             // 
             // btnHistory
             // 
@@ -354,7 +353,6 @@
             btnRefreshList.TabIndex = 5;
             btnRefreshList.Text = "🔄 REFERECH";
             btnRefreshList.UseVisualStyleBackColor = false;
-            Load += FrmMain_Load;
             // 
             // txtSearch
             // 
@@ -898,6 +896,7 @@
             progressTransfer.Name = "progressTransfer";
             progressTransfer.Size = new Size(488, 25);
             progressTransfer.TabIndex = 4;
+            progressTransfer.Click += progressTransfer_Click;
             // 
             // lblTransferStatus
             // 
@@ -905,9 +904,9 @@
             lblTransferStatus.ForeColor = Color.RoyalBlue;
             lblTransferStatus.Location = new Point(351, 44);
             lblTransferStatus.Name = "lblTransferStatus";
-            lblTransferStatus.Size = new Size(172, 25);
+            lblTransferStatus.Size = new Size(0, 25);
             lblTransferStatus.TabIndex = 3;
-            lblTransferStatus.Text = "(Đang tải xuống...)";
+            lblTransferStatus.Click += lblTransferStatus_Click;
             // 
             // lblTransferFileName
             // 

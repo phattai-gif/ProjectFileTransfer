@@ -81,6 +81,10 @@ namespace ProjectFileTransferClient
                 lblStatus.Text = "🟢 Connected";
                 lblStatus.ForeColor = Color.Green;
 
+                // Đồng bộ nút bấm ngay khi vừa kết nối thành công
+                btnConnect.Enabled = false;
+                btnDisconnect.Enabled = true;
+                
                 FrmMain frm = new FrmMain(clientManager, this);
                 frm.Show();
 
@@ -100,6 +104,13 @@ namespace ProjectFileTransferClient
             lblStatus.Text = "🔴 Disconnected";
             lblStatus.ForeColor = Color.Red;
 
+            btnConnect.Enabled = true;
+            btnDisconnect.Enabled = false;
+        }
+        public void UpdateDisconnectStatus()
+        {
+            lblStatus.Text = "🔴 Disconnected";
+            lblStatus.ForeColor = Color.Red;
             btnConnect.Enabled = true;
             btnDisconnect.Enabled = false;
         }

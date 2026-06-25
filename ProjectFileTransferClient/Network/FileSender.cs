@@ -6,9 +6,7 @@ namespace ProjectFileTransferClient.Network
 {
     public class FileSender
     {
-        public void SendFile(
-            string filePath,
-            NetworkStream stream)
+        public void SendFile(string filePath, NetworkStream stream)
         {
 
         }

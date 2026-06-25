@@ -118,7 +118,28 @@ namespace ProjectFileTransferClient.Network
 
         public bool IsConnected()
         {
-            return client != null && client.Connected;
+            try
+            {
+                if (client != null && client.Client != null && client.Client.Connected)
+                {
+                    // Sử dụng kỹ thuật Poll để kiểm tra xem Socket có thực sự còn phản hồi hay không
+                    if (client.Client.Poll(0, SelectMode.SelectRead))
+                    {
+                        byte[] buff = new byte[1];
+                        if (client.Client.Receive(buff, SocketFlags.Peek) == 0)
+                        {
+                            // Client đã mất kết nối thực sự
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
