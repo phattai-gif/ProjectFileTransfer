@@ -25,8 +25,10 @@ namespace ProjectFileTransferClient.Forms
         {
             LoadFileList();
             ////////////////
+            // LoadFileList();
+
             dgvHistory.ColumnHeadersDefaultCellStyle.Font =
-    new Font("Segoe UI", 10, FontStyle.Bold);
+                new Font("Segoe UI", 10, FontStyle.Bold);
 
             dgvHistory.DefaultCellStyle.Font =
                 new Font("Segoe UI", 10);
@@ -48,6 +50,7 @@ namespace ProjectFileTransferClient.Forms
         //HÀM LOADFILELIST=========================================//
         private void LoadFileList()
         {
+          
             // Gửi lệnh LIST sang Server để yêu cầu danh sách file
             clientManager.SendMessage(Protocol.LIST);
 
@@ -66,11 +69,10 @@ namespace ProjectFileTransferClient.Forms
                 // Bắt đầu đọc từng file từ Server
                 for (int i = 1; i < parts.Length; i++)
                 {
-                    // Ví dụ dữ liệu nhận:
+                    // Ví dụ dữ liệu nhận:btnRefreshList.Text = "🔄 REFRESH";
                     // abc.pdf|24576
 
-                    string[] fileInfo =
-                        parts[i].Split('|');
+                    string[] fileInfo =parts[i].Split('#');
 
                     // Tên file
                     string fileName =
@@ -82,13 +84,22 @@ namespace ProjectFileTransferClient.Forms
                     // Nếu Server gửi kích thước
                     if (fileInfo.Length > 1)
                     {
-                        long size =
-                            long.Parse(fileInfo[1]);
+                        long size = long.Parse(fileInfo[1]);
 
-                        // Đổi Byte sang KB
-                        fileSize =
-                            (size / 1024.0)
-                            .ToString("F2") + " KB";
+                        if (size < 1024)
+                        {
+                            fileSize = size + " B";
+                        }
+                        else if (size < 1024 * 1024)
+                        {
+                            fileSize =
+                                (size / 1024.0).ToString("F2") + " KB";
+                        }
+                        else
+                        {
+                            fileSize =
+                                (size / 1024.0 / 1024.0).ToString("F2") + " MB";
+                        }
                     }
 
                     // Tạo dòng mới trong ListView
@@ -291,17 +302,36 @@ namespace ProjectFileTransferClient.Forms
 
         private void btnUploaddown_Click(object sender, EventArgs e)
         {
-            OpenFileDialog open = new OpenFileDialog();
-
-            if (open.ShowDialog() == DialogResult.OK)
             {
-                MessageBox.Show("Đã chọn: " + open.FileName);
+                OpenFileDialog open =
+                    new OpenFileDialog();
+
+                if (open.ShowDialog() ==
+                    DialogResult.OK)
+                {
+                    bool result =
+                        clientManager.UploadFile(
+                            open.FileName);
+
+                    if (result)
+                    {
+                        MessageBox.Show(
+                            "Upload thành công.");
+
+                        LoadFileList();
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            "Upload thất bại.");
+                    }
+                }
             }
         }
 
         private async void btnDownloadFile_Click(object sender, EventArgs e)
         {
-            // 1. Hiển thị file (Kiểm tra và lấy file được chọn từ ListView)
+            // 1. KIỂM TRA CHỌN FILE (Chỉ để ở đây, dùng luồng UI chính)
             if (lvFiles.SelectedItems.Count == 0)
             {
                 MessageBox.Show("Vui lòng chọn một file từ danh sách để tải.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -325,12 +355,12 @@ namespace ProjectFileTransferClient.Forms
             string savePath = saveFileDialog.FileName;
             btnDownloadFile.Enabled = false; // Khóa nút tránh click trùng
 
-            // Reset UI tiến trình truyền trước khi chạy theo đúng tên control của bạn
+            // Reset UI tiến trình truyền
             progressTransfer.Value = 0;
             lblTransferred.Text = "Bắt đầu tải xuống...";
             lblTransferFileName.Text = $"{fileName} (Đang tải xuống...)";
 
-            // Chạy đa luồng ngầm xử lý nhận dữ liệu và ghi file
+            // 3. Chạy đa luồng ngầm xử lý nhận dữ liệu và ghi file
             await Task.Run(() =>
             {
                 try
@@ -339,9 +369,11 @@ namespace ProjectFileTransferClient.Forms
                     string cmd = $"{Protocol.DOWNLOAD}{Protocol.DELIMITER}{fileName}";
                     clientManager.SendMessage(cmd);
 
-                    // Nhận phản hồi meta-data (Kích thước file) từ Server
+                    // Nhận phản hồi từ Server
                     string response = clientManager.ReceiveMessage();
-                    string[] parts = response.Split(Protocol.DELIMITER);
+
+                    // Tách bằng cả ký tự DELIMITER (|) và dấu # để không bị lỗi cấu trúc chuỗi
+                    string[] parts = response.Split(new char[] { Protocol.DELIMITER, '#' }, StringSplitOptions.RemoveEmptyEntries);
 
                     if (parts[0] == Protocol.DOWNLOAD_SUCCESS)
                     {
@@ -350,16 +382,15 @@ namespace ProjectFileTransferClient.Forms
 
                         FileReceiver receiver = new FileReceiver();
 
-                        // 3. Nhận chunk & Ghi file xuống máy
+                        // Nhận chunk & Ghi file xuống máy
                         receiver.ReceiveFile(savePath, fileSize, stream, (received, total) =>
                         {
-                            // Cập nhật phần trăm tiến trình (0% -> 100%) lên UI giao diện chính
+                            // Cập nhật phần trăm tiến trình lên UI giao diện chính
                             this.Invoke(new Action(() =>
                             {
                                 int percent = (int)((received * 100) / total);
                                 progressTransfer.Value = percent;
 
-                                // Hiển thị dung lượng dạng MB
                                 double receivedMB = received / 1024.0 / 1024.0;
                                 double totalMB = total / 1024.0 / 1024.0;
                                 lblTransferred.Text = $"Đã truyền: {receivedMB:F2} MB / {totalMB:F2} MB ({percent}%)";
@@ -392,6 +423,7 @@ namespace ProjectFileTransferClient.Forms
 
             btnDownloadFile.Enabled = true; // Mở khóa lại nút sau khi hoàn thành
         }
+
 
         private void btnLogout2_Click(object sender, EventArgs e)
         {

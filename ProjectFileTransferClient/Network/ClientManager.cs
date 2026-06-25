@@ -105,6 +105,170 @@ namespace ProjectFileTransferClient.Network
             return "";
         }
         //===========================================
+        //================================================
+        // HÀM UPLOAD FILE LÊN SERVER
+        public bool UploadFile(string filePath)
+        {
+            try
+            {
+                if (writer == null || client == null)
+                    return false;
+
+                FileInfo file = new FileInfo(filePath);
+
+                string fileName = file.Name;
+                long fileSize = file.Length;
+
+                // Gửi lệnh upload
+                writer.WriteLine(
+                    $"{Protocol.UPLOAD}" +
+                    $"{Protocol.DELIMITER}" +
+                    $"{fileName}" +
+                    $"{Protocol.DELIMITER}" +
+                    $"{fileSize}");
+
+                // Lấy stream
+                NetworkStream stream =
+                    client.GetStream();
+
+                // Gửi dữ liệu file
+                using (FileStream fs =
+                       new FileStream(filePath,
+                       FileMode.Open,
+                       FileAccess.Read))
+                {
+                    byte[] buffer =
+                        new byte[Protocol.BUFFER_SIZE];
+
+                    int bytesRead;
+
+                    while ((bytesRead =
+                            fs.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        stream.Write(buffer, 0, bytesRead);
+                    }
+
+                    stream.Flush();
+                }
+
+                // Chỉ cần dùng lại stream cũ
+                stream.ReadTimeout = 5000;
+
+                string response;
+
+                do
+                {
+                    response = reader.ReadLine();
+
+                    MessageBox.Show("Read = " + response);
+
+                } while (response != null &&
+                         response.StartsWith("LIST_SUCCESS"));
+
+                return response == Protocol.UPLOAD_SUCCESS;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return false;
+            }
+        }
+        //================================================
+        ////================================================
+        // HÀM DOWNLOAD FILE TỪ SERVER
+        public bool DownloadFile(string fileName,
+                                 string savePath)
+        {
+            try
+            {
+                // Gửi yêu cầu download
+                writer?.WriteLine(
+                    $"{Protocol.DOWNLOAD}" +
+                    $"{Protocol.DELIMITER}" +
+                    $"{fileName}");
+
+                // Nhận phản hồi
+                string response = reader?.ReadLine() ?? "";
+                MessageBox.Show( "Length = " + response.Length +"\n" +response);
+                // Tách dữ liệu
+                string[] parts =
+                    response.Split(Protocol.DELIMITER);
+
+                // Kiểm tra dữ liệu trả về
+                if (parts.Length < 2)
+                {
+                    MessageBox.Show("Thiếu dữ liệu.");
+                    return false;
+                }
+
+                if (parts[0] != Protocol.DOWNLOAD_SUCCESS)
+                {
+                    MessageBox.Show("Không phải DOWNLOAD_SUCCESS");
+                    return false;
+                }
+
+                long fileSize =
+                    long.Parse(parts[1]);
+
+                MessageBox.Show(
+                    "FILE SIZE = " + fileSize);
+
+                long totalRead = 0;
+
+                byte[] buffer =
+                    new byte[Protocol.BUFFER_SIZE];
+
+                NetworkStream stream =
+                    client!.GetStream();
+
+                using (FileStream fs =
+                       new FileStream(savePath,
+                                      FileMode.Create,
+                                      FileAccess.Write))
+                {
+                    while (totalRead < fileSize)
+                    {
+                        int bytesToRead =
+                            (int)Math.Min(
+                                buffer.Length,
+                                fileSize - totalRead);
+
+                        int bytesRead =
+                            stream.Read(
+                                buffer,
+                                0,
+                                bytesToRead);
+
+                        if (bytesRead <= 0)
+                        {
+                            MessageBox.Show(
+                                "bytesRead = 0");
+                            break;
+                        }
+
+                        fs.Write(
+                            buffer,
+                            0,
+                            bytesRead);
+
+                        totalRead += bytesRead;
+                    }
+                }
+
+                MessageBox.Show(
+                    "Đã nhận: " +
+                    totalRead +
+                    " / " +
+                    fileSize);
+
+                return totalRead == fileSize;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return false;
+            }
+        }
         public void Disconnect()
         {
             writer?.Close();

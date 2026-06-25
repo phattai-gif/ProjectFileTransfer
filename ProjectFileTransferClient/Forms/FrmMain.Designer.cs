@@ -278,6 +278,7 @@
             btnDownload.TabIndex = 4;
             btnDownload.Text = "📥 Download";
             btnDownload.UseVisualStyleBackColor = false;
+            btnDownloadFile.Click += btnDownloadFile_Click;
             // 
             // btnUpload
             // 
@@ -351,8 +352,12 @@
             btnRefreshList.Name = "btnRefreshList";
             btnRefreshList.Size = new Size(178, 59);
             btnRefreshList.TabIndex = 5;
-            btnRefreshList.Text = "🔄 REFERECH";
+            btnRefreshList.Text = "🔄 REFRESH";
             btnRefreshList.UseVisualStyleBackColor = false;
+
+
+            btnRefreshList.Click += btnRefreshList_Click;
+
             // 
             // txtSearch
             // 

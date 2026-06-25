@@ -60,7 +60,7 @@ namespace ProjectFileTransferServer.Services
                 //đọc thông tin file
                 FileInfo info = new FileInfo(files[i]);
 
-                result[i] = info.Name + "|" + info.Length;
+                result[i] = info.Name + "#" + info.Length;
             }
 
             return result;
@@ -82,7 +82,7 @@ namespace ProjectFileTransferServer.Services
                 FileInfo info = new FileInfo(fullPaths[i]);
 
                 // Ghép tên file và kích thước
-                result[i] = info.Name + "|" + info.Length;
+                result[i] = info.Name + "#" + info.Length;
             }
 
             return result;

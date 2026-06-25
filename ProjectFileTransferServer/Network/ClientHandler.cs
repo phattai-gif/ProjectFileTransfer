@@ -127,7 +127,7 @@ namespace ProjectFileTransferServer.Network
                 }
 
                 writer.WriteLine(Protocol.UPLOAD_SUCCESS);
-
+                logCallback?.Invoke("Đã gửi UPLOAD_SUCCESS về Client");
                 // THÔNG BÁO LÊN GIAO DIỆN KHI FILE ĐÃ VÀO THƯ MỤC STORAGE THÀNH CÔNG
                 logCallback?.Invoke($"[UPLOAD] Thành công: Đã lưu '{fileName}' vào hệ thống.");
             }
