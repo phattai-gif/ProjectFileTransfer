@@ -101,11 +101,15 @@ namespace ProjectFileTransferServer.Network
             string fileName = parts[1];
             long fileSize = long.Parse(parts[2]);
 
-            // Thông báo lên giao diện là đang nhận file
-            logCallback?.Invoke($"Đang nhận file: {fileName} ({fileSize} bytes)...");
+            // Thông báo lên giao diện log Server là đang xử lý yêu cầu
+            logCallback?.Invoke($"Nhận yêu cầu UPLOAD file: {fileName} ({fileSize} bytes) từ Client.");
 
             try
             {
+                // Gửi lệnh báo cho Client biết Server đã sẵn sàng nhận luồng Byte dữ liệu
+                writer.WriteLine(Protocol.UPLOAD);
+                // ----------------------------------------------------------------------
+
                 using (FileStream fs = fileManager.CreateFileStream(fileName))
                 {
                     // Đọc dữ liệu file theo từng khối nhỏ (chunk)
@@ -126,8 +130,10 @@ namespace ProjectFileTransferServer.Network
                     }
                 }
 
+                // Sau khi đã nhận đủ 100% byte dữ liệu và đóng FileStream, thông báo kết quả thành công
                 writer.WriteLine(Protocol.UPLOAD_SUCCESS);
                 logCallback?.Invoke("Đã gửi UPLOAD_SUCCESS về Client");
+
                 // THÔNG BÁO LÊN GIAO DIỆN KHI FILE ĐÃ VÀO THƯ MỤC STORAGE THÀNH CÔNG
                 logCallback?.Invoke($"[UPLOAD] Thành công: Đã lưu '{fileName}' vào hệ thống.");
             }

@@ -198,7 +198,6 @@
             txtIP.RightToLeft = RightToLeft.No;
             txtIP.Size = new Size(850, 45);
             txtIP.TabIndex = 1;
-            txtIP.Text = "127.0.0.1";
             txtIP.TextChanged += txtIP_TextChanged;
             // 
             // lblIP

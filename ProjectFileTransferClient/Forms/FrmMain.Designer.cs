@@ -353,10 +353,7 @@
             btnRefreshList.TabIndex = 5;
             btnRefreshList.Text = "🔄 REFRESH";
             btnRefreshList.UseVisualStyleBackColor = false;
-
-
             btnRefreshList.Click += btnRefreshList_Click;
-
             // 
             // txtSearch
             // 
@@ -748,7 +745,7 @@
             lblRemainTime.AutoSize = true;
             lblRemainTime.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblRemainTime.ForeColor = SystemColors.ActiveCaptionText;
-            lblRemainTime.Location = new Point(48, 29);
+            lblRemainTime.Location = new Point(33, 27);
             lblRemainTime.Name = "lblRemainTime";
             lblRemainTime.Size = new Size(94, 28);
             lblRemainTime.TabIndex = 1;
@@ -759,7 +756,7 @@
             lblRemainTitle.AutoSize = true;
             lblRemainTitle.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblRemainTitle.ForeColor = SystemColors.ActiveCaptionText;
-            lblRemainTitle.Location = new Point(27, 5);
+            lblRemainTitle.Location = new Point(18, 6);
             lblRemainTitle.Name = "lblRemainTitle";
             lblRemainTitle.Size = new Size(124, 21);
             lblRemainTitle.TabIndex = 0;
@@ -781,7 +778,7 @@
             lblState.AutoSize = true;
             lblState.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
             lblState.ForeColor = SystemColors.ActiveCaptionText;
-            lblState.Location = new Point(27, 35);
+            lblState.Location = new Point(13, 31);
             lblState.Name = "lblState";
             lblState.Size = new Size(134, 21);
             lblState.TabIndex = 1;
@@ -792,7 +789,7 @@
             lblStateTitle.AutoSize = true;
             lblStateTitle.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblStateTitle.ForeColor = SystemColors.ActiveCaptionText;
-            lblStateTitle.Location = new Point(47, 7);
+            lblStateTitle.Location = new Point(43, 7);
             lblStateTitle.Name = "lblStateTitle";
             lblStateTitle.Size = new Size(79, 21);
             lblStateTitle.TabIndex = 0;
@@ -813,11 +810,12 @@
             lblElapsed.AutoSize = true;
             lblElapsed.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblElapsed.ForeColor = SystemColors.ActiveCaptionText;
-            lblElapsed.Location = new Point(49, 29);
+            lblElapsed.Location = new Point(35, 30);
             lblElapsed.Name = "lblElapsed";
             lblElapsed.Size = new Size(94, 28);
             lblElapsed.TabIndex = 1;
             lblElapsed.Text = "00:00:00";
+            lblElapsed.Click += lblElapsed_Click;
             // 
             // lblElapsedTitle
             // 
@@ -846,22 +844,24 @@
             lblSpeed.AutoSize = true;
             lblSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblSpeed.ForeColor = SystemColors.ActiveCaptionText;
-            lblSpeed.Location = new Point(55, 29);
+            lblSpeed.Location = new Point(41, 26);
             lblSpeed.Name = "lblSpeed";
             lblSpeed.Size = new Size(80, 28);
             lblSpeed.TabIndex = 1;
             lblSpeed.Text = "0 MB/s";
+            lblSpeed.Click += lblSpeed_Click;
             // 
             // lblSpeedTitle
             // 
             lblSpeedTitle.AutoSize = true;
             lblSpeedTitle.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblSpeedTitle.ForeColor = SystemColors.ActiveCaptionText;
-            lblSpeedTitle.Location = new Point(45, 5);
+            lblSpeedTitle.Location = new Point(30, 5);
             lblSpeedTitle.Name = "lblSpeedTitle";
             lblSpeedTitle.Size = new Size(105, 21);
             lblSpeedTitle.TabIndex = 0;
             lblSpeedTitle.Text = "Tốc độ truyền";
+            lblSpeedTitle.Click += lblSpeedTitle_Click;
             // 
             // lblRemaining
             // 
@@ -1150,7 +1150,6 @@
         private PictureBox picLogo;
         private Button btnSettings;
         private Panel pnlConnection;
-        private Label label1;
         private TextBox txtSearch;
         private Button btnLogout2;
         private GroupBox grpFileList;

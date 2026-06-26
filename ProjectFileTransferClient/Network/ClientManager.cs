@@ -94,7 +94,7 @@ namespace ProjectFileTransferClient.Network
                 return new string[0];
             }
         }
-        //Hàm recivemessage===============================//
+        //Hàm recivemessage
         public string ReceiveMessage()
         {
             if (reader != null)
@@ -104,8 +104,7 @@ namespace ProjectFileTransferClient.Network
 
             return "";
         }
-        //===========================================
-        //================================================
+
         // HÀM UPLOAD FILE LÊN SERVER
         public bool UploadFile(string filePath)
         {

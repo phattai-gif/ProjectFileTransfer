@@ -13,7 +13,7 @@ namespace ProjectFileTransferClient.Forms
 {
     public partial class FrmMain : Form
     {
-        private List<ListViewItem> allFiles =new List<ListViewItem>(); //Lưu toàn bộ danh sách file gốc.
+        private List<ListViewItem> allFiles = new List<ListViewItem>(); //Lưu toàn bộ danh sách file gốc.
         public FrmMain(ClientManager manager, FrmConnect connectForm)
         {
             InitializeComponent();
@@ -25,23 +25,35 @@ namespace ProjectFileTransferClient.Forms
         private void FrmMain_Load(object sender, EventArgs e)
         {
             LoadFileList();
-            ////////////////
-            // LoadFileList();
 
-            dgvHistory.ColumnHeadersDefaultCellStyle.Font =
-                new Font("Segoe UI", 10, FontStyle.Bold);
+            dgvHistory.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 
-            dgvHistory.DefaultCellStyle.Font =
-                new Font("Segoe UI", 10);
+            dgvHistory.DefaultCellStyle.Font = new Font("Segoe UI", 10);
 
             dgvHistory.RowTemplate.Height = 35;
 
             dgvHistory.EnableHeadersVisualStyles = false;
         }
-        //===========================================================//
+
         private ClientManager clientManager;//khaibao clientManager
         private FrmConnect frmConnect;
-        //===========================================================//
+
+        // Lớp lưu trữ trạng thái tiến trình của từng file riêng biệt
+        public class TransferProgressState
+        {
+            public string FileName { get; set; }
+            public int Percent { get; set; } = 0;
+            public string TransferredText { get; set; } = "Đã truyền: 0,00 MB / 0,00 MB";
+            public string RemainingText { get; set; } = "Còn lại: 0,00 MB";
+            public string SpeedText { get; set; } = "0,00 MB/s";
+            public string ElapsedText { get; set; } = "00:00:00";
+            public string RemainTimeText { get; set; } = "00:00:00";
+            public string StateText { get; set; } = "Sẵn sàng";
+        }
+
+        // Từ điển quản lý bộ nhớ tiến trình (Key là tên file)
+        private Dictionary<string, TransferProgressState> fileProgresses = new Dictionary<string, TransferProgressState>();
+
         //đóng FrmMain thì hiện lại FrmConnect//
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -211,8 +223,33 @@ namespace ProjectFileTransferClient.Forms
             //        break;
             //}
 
-            // Cập nhật tên file xuống khu vực "TIẾN TRÌNH TRUYỀN FILE" 
-            lblTransferFileName.Text = fileName;
+            // --- ĐỌC TIẾN TRÌNH RIÊNG BIỆT CỦA FILE ĐƯỢC CHỌN ---
+            if (fileProgresses.ContainsKey(fileName))
+            {
+                // Nếu file này đã hoặc đang chạy truyền dữ liệu, bốc dữ liệu cũ đắp lên UI
+                var state = fileProgresses[fileName];
+
+                lblTransferFileName.Text = $"{state.FileName} ({state.StateText})";
+                progressTransfer.Value = state.Percent;
+                lblTransferred.Text = state.TransferredText;
+                lblRemaining.Text = state.RemainingText;
+                lblSpeed.Text = state.SpeedText;
+                lblElapsed.Text = state.ElapsedText;
+                lblRemainTime.Text = state.RemainTimeText;
+                lblState.Text = state.StateText;
+            }
+            else
+            {
+                // Nếu file này chưa từng được bấm tải/gửi, trả các thanh về trạng thái trống mặc định
+                lblTransferFileName.Text = fileName;
+                progressTransfer.Value = 0;
+                lblTransferred.Text = "Đã truyền: 0,00 MB / 0,00 MB";
+                lblRemaining.Text = "Còn lại: 0,00 MB";
+                lblSpeed.Text = "0,00 MB/s";
+                lblElapsed.Text = "00:00:00";
+                lblRemainTime.Text = "00:00:00";
+                lblState.Text = "Sẵn sàng";
+            }
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -303,38 +340,136 @@ namespace ProjectFileTransferClient.Forms
 
         }
 
-        private void btnUploaddown_Click(object sender, EventArgs e)
+        private async void btnUploaddown_Click(object sender, EventArgs e)
         {
+            OpenFileDialog open = new OpenFileDialog();
+            open.Title = "Chọn file cần upload lên Server";
+            open.Filter = "All files (*.*)|*.*";
+
+            if (open.ShowDialog() == DialogResult.OK)
             {
-                OpenFileDialog open =
-                    new OpenFileDialog();
+                string localFilePath = open.FileName;
+                string fileName = Path.GetFileName(localFilePath);
 
-                if (open.ShowDialog() ==
-                    DialogResult.OK)
+                btnUploaddown.Enabled = false;
+
+                // Khởi tạo trạng thái file vào Dictionary
+                if (!fileProgresses.ContainsKey(fileName)) fileProgresses[fileName] = new TransferProgressState();
+                fileProgresses[fileName].FileName = fileName;
+                fileProgresses[fileName].StateText = "Đang tải lên...";
+
+                await Task.Run(() =>
                 {
-                    bool result =
-                        clientManager.UploadFile(
-                            open.FileName);
-
-                    if (result)
+                    try
                     {
-                        MessageBox.Show(
-                            "Upload thành công.");
+                        NetworkStream stream = clientManager.GetStream();
+                        if (stream != null)
+                        {
+                            while (stream.DataAvailable) { clientManager.ReceiveMessage(); }
+                        }
 
-                        LoadFileList();
+                        FileInfo fileInfo = new FileInfo(localFilePath);
+                        long fileSize = fileInfo.Length;
+
+                        string cmd = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}";
+                        clientManager.SendMessage(cmd);
+
+                        string response = clientManager.ReceiveMessage();
+                        string[] parts = response.Split(new char[] { Protocol.DELIMITER, '#' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (parts[0] == "UPLOAD_SUCCESS" || parts[0] == "OK" || parts[0] == Protocol.UPLOAD)
+                        {
+                            FileSender senderFile = new FileSender();
+                            DateTime startTime = DateTime.Now;
+
+                            // Khai báo một biến để theo dõi dung lượng cập nhật lần trước 
+                            long lastReportedBytes = 0;
+
+                            senderFile.SendFile(localFilePath, stream, (sentBytes, totalBytes) =>
+                            {
+                                if (sentBytes - lastReportedBytes < 500 * 1024 && sentBytes < totalBytes)
+                                {
+                                    return; 
+                                }
+                                lastReportedBytes = sentBytes; // Cập nhật mốc đánh dấu mới
+
+                                int percent = (int)(((double)sentBytes / totalBytes) * 100);
+                                if (percent > 100) percent = 100;
+
+                                double sentMB = sentBytes / 1024.0 / 1024.0;
+                                double totalMB = totalBytes / 1024.0 / 1024.0;
+                                double remainingMB = totalMB - sentMB;
+
+                                double elapsedSeconds = (DateTime.Now - startTime).TotalSeconds;
+                                string speedStr = "0,00 MB/s";
+                                string remainTimeStr = "00:00:00";
+                                if (elapsedSeconds > 0)
+                                {
+                                    double speedValue = sentMB / elapsedSeconds;
+                                    speedStr = $"{speedValue:F2} MB/s";
+                                    if (speedValue > 0)
+                                    {
+                                        remainTimeStr = TimeSpan.FromSeconds(remainingMB / speedValue).ToString(@"hh\:mm\:ss");
+                                    }
+                                }
+                                string elapsedStr = TimeSpan.FromSeconds(elapsedSeconds).ToString(@"hh\:mm\:ss");
+
+                                var state = fileProgresses[fileName];
+                                state.Percent = percent;
+                                state.TransferredText = $"Đã truyền: {sentMB:F2} MB / {totalMB:F2} MB";
+                                state.RemainingText = $"Còn lại: {remainingMB:F2} MB";
+                                state.SpeedText = speedStr;
+                                state.ElapsedText = elapsedStr;
+                                state.RemainTimeText = remainTimeStr;
+                                state.StateText = "Đang tải lên...";
+
+                                this.Invoke(new Action(() =>
+                                {
+                                    lblTransferFileName.Text = $"{fileName} (Đang tải lên...)";
+                                    progressTransfer.Value = state.Percent;
+                                    lblPercent.Text = $"{state.Percent}%"; 
+
+                                    lblTransferred.Text = state.TransferredText;
+                                    lblRemaining.Text = state.RemainingText;
+                                    lblSpeed.Text = state.SpeedText;
+                                    lblElapsed.Text = state.ElapsedText;
+                                    lblRemainTime.Text = state.RemainTimeText;
+                                    lblState.Text = state.StateText;
+                                }));
+                            });
+
+                            // Hoàn thành chu trình tải lên
+                            var finalState = fileProgresses[fileName];
+                            finalState.StateText = "Hoàn thành";
+                            finalState.Percent = 100;
+
+                            this.Invoke(new Action(() =>
+                            {
+                                lblTransferFileName.Text = $"{fileName} (Hoàn thành)";
+                                lblState.Text = "Hoàn thành";
+                                progressTransfer.Value = 100;
+
+                                MessageBox.Show("Upload file thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                LoadFileList();
+                            }));
+                        }
+                        else
+                        {
+                            this.Invoke(new Action(() => MessageBox.Show("Server từ chối yêu cầu upload file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)));
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        MessageBox.Show(
-                            "Upload thất bại.");
+                        this.Invoke(new Action(() => MessageBox.Show($"Lỗi truyền dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)));
                     }
-                }
+                });
+
+                btnUploaddown.Enabled = true;
             }
         }
 
         private async void btnDownloadFile_Click(object sender, EventArgs e)
         {
-            // 1. KIỂM TRA CHỌN FILE (Chỉ để ở đây, dùng luồng UI chính)
             if (lvFiles.SelectedItems.Count == 0)
             {
                 MessageBox.Show("Vui lòng chọn một file từ danh sách để tải.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -342,89 +477,132 @@ namespace ProjectFileTransferClient.Forms
             }
 
             string fileName = lvFiles.SelectedItems[0].Text;
-            string fileExt = lvFiles.SelectedItems[0].SubItems[2].Text; // Lấy đuôi file từ cột thứ 3
+            string fileExt = lvFiles.SelectedItems[0].SubItems[2].Text;
 
-            // 2. Chọn thư mục lưu 
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.FileName = fileName;
             saveFileDialog.Title = "Chọn thư mục và vị trí lưu file tải về";
             saveFileDialog.Filter = $"{fileExt.ToUpper()} Files (*{fileExt})|*{fileExt}|All files (*.*)|*.*";
 
-            if (saveFileDialog.ShowDialog() != DialogResult.OK)
-            {
-                return; // Người dùng hủy chọn thư mục lưu
-            }
+            if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
 
             string savePath = saveFileDialog.FileName;
-            btnDownloadFile.Enabled = false; // Khóa nút tránh click trùng
+            btnDownloadFile.Enabled = false;
 
-            // Reset UI tiến trình truyền
-            progressTransfer.Value = 0;
-            lblTransferred.Text = "Bắt đầu tải xuống...";
-            lblTransferFileName.Text = $"{fileName} (Đang tải xuống...)";
+            // Khởi tạo nhanh trạng thái ban đầu cho file này trong Dictionary
+            if (!fileProgresses.ContainsKey(fileName)) fileProgresses[fileName] = new TransferProgressState();
+            fileProgresses[fileName].FileName = fileName;
+            fileProgresses[fileName].StateText = "Đang tải xuống...";
 
-            // 3. Chạy đa luồng ngầm xử lý nhận dữ liệu và ghi file
             await Task.Run(() =>
             {
                 try
                 {
-                    // Gửi yêu cầu tải file tới Server theo Protocol
+                    NetworkStream stream = clientManager.GetStream();
+                    if (stream != null)
+                    {
+                        while (stream.DataAvailable) { clientManager.ReceiveMessage(); }
+                    }
+
                     string cmd = $"{Protocol.DOWNLOAD}{Protocol.DELIMITER}{fileName}";
                     clientManager.SendMessage(cmd);
 
-                    // Nhận phản hồi từ Server
                     string response = clientManager.ReceiveMessage();
-
-                    // Tách bằng cả ký tự DELIMITER (|) và dấu # để không bị lỗi cấu trúc chuỗi
                     string[] parts = response.Split(new char[] { Protocol.DELIMITER, '#' }, StringSplitOptions.RemoveEmptyEntries);
 
                     if (parts[0] == Protocol.DOWNLOAD_SUCCESS)
                     {
                         long fileSize = long.Parse(parts[1]);
-                        NetworkStream stream = clientManager.GetStream();
-
                         FileReceiver receiver = new FileReceiver();
+                        DateTime startTime = DateTime.Now;
 
-                        // Nhận chunk & Ghi file xuống máy
+                        // Khai báo biến mốc trước khi gọi ReceiveFile
+                        long lastReportedBytes = 0;
+
                         receiver.ReceiveFile(savePath, fileSize, stream, (received, total) =>
                         {
-                            // Cập nhật phần trăm tiến trình lên UI giao diện chính
+                            if (received - lastReportedBytes < 500 * 1024 && received < total)
+                            {
+                                return;
+                            }
+                            lastReportedBytes = received;
+
+                            int percent = (int)(((double)received / total) * 100);
+                            if (percent > 100) percent = 100;
+
+                            double receivedMB = received / 1024.0 / 1024.0;
+                            double totalMB = total / 1024.0 / 1024.0;
+                            double remainingMB = totalMB - receivedMB;
+
+                            double elapsedSeconds = (DateTime.Now - startTime).TotalSeconds;
+                            string speedStr = "0,00 MB/s";
+                            string remainTimeStr = "00:00:00";
+                            if (elapsedSeconds > 0)
+                            {
+                                double speedValue = receivedMB / elapsedSeconds;
+                                speedStr = $"{speedValue:F2} MB/s";
+                                if (speedValue > 0)
+                                {
+                                    remainTimeStr = TimeSpan.FromSeconds(remainingMB / speedValue).ToString(@"hh\:mm\:ss");
+                                }
+                            }
+                            string elapsedStr = TimeSpan.FromSeconds(elapsedSeconds).ToString(@"hh\:mm\:ss");
+
+                            var state = fileProgresses[fileName];
+                            state.Percent = percent;
+                            state.TransferredText = $"Đã truyền: {receivedMB:F2} MB / {totalMB:F2} MB";
+                            state.RemainingText = $"Còn lại: {remainingMB:F2} MB";
+                            state.SpeedText = speedStr;
+                            state.ElapsedText = elapsedStr;
+                            state.RemainTimeText = remainTimeStr;
+                            state.StateText = "Đang tải xuống...";
+
                             this.Invoke(new Action(() =>
                             {
-                                int percent = (int)((received * 100) / total);
-                                progressTransfer.Value = percent;
+                                if (lvFiles.SelectedItems.Count > 0 && lvFiles.SelectedItems[0].Text == fileName)
+                                {
+                                    lblTransferFileName.Text = $"{fileName} (Đang tải xuống...)";
+                                    progressTransfer.Value = state.Percent;
+                                    lblPercent.Text = $"{state.Percent}%"; 
 
-                                double receivedMB = received / 1024.0 / 1024.0;
-                                double totalMB = total / 1024.0 / 1024.0;
-                                lblTransferred.Text = $"Đã truyền: {receivedMB:F2} MB / {totalMB:F2} MB ({percent}%)";
+                                    lblTransferred.Text = state.TransferredText;
+                                    lblRemaining.Text = state.RemainingText;
+                                    lblSpeed.Text = state.SpeedText;
+                                    lblElapsed.Text = state.ElapsedText;
+                                    lblRemainTime.Text = state.RemainTimeText;
+                                    lblState.Text = state.StateText;
+                                }
                             }));
                         });
 
-                        // Hoàn thành chu trình tải xuống
+                        // Hoàn thành chu trình tải
+                        var finalState = fileProgresses[fileName];
+                        finalState.StateText = "Hoàn thành";
+                        finalState.Percent = 100;
+
                         this.Invoke(new Action(() =>
                         {
-                            lblTransferFileName.Text = $"{fileName} (Hoàn thành)";
+                            if (lvFiles.SelectedItems.Count > 0 && lvFiles.SelectedItems[0].Text == fileName)
+                            {
+                                lblTransferFileName.Text = $"{fileName} (Hoàn thành)";
+                                lblState.Text = "Hoàn thành";
+                                progressTransfer.Value = 100;
+                            }
                             MessageBox.Show($"Tải file '{fileName}' thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }));
                     }
                     else
                     {
-                        this.Invoke(new Action(() =>
-                        {
-                            MessageBox.Show("Server từ chối yêu cầu tải file hoặc file không tồn tại.", "Lỗi từ Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }));
+                        this.Invoke(new Action(() => MessageBox.Show("Server từ chối yêu cầu tải file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)));
                     }
                 }
                 catch (Exception ex)
                 {
-                    this.Invoke(new Action(() =>
-                    {
-                        MessageBox.Show($"Lỗi trong quá trình truyền dữ liệu: {ex.Message}", "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }));
+                    this.Invoke(new Action(() => MessageBox.Show($"Lỗi truyền dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)));
                 }
             });
 
-            btnDownloadFile.Enabled = true; // Mở khóa lại nút sau khi hoàn thành
+            btnDownloadFile.Enabled = true;
         }
 
 
@@ -466,6 +644,21 @@ namespace ProjectFileTransferClient.Forms
                     item.BackColor = Color.White;
                 }
             }
+        }
+
+        private void lblSpeed_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblElapsed_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblSpeedTitle_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
