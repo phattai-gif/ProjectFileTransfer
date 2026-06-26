@@ -361,9 +361,9 @@
             txtSearch.Location = new Point(659, 20);
             txtSearch.Multiline = true;
             txtSearch.Name = "txtSearch";
+            txtSearch.PlaceholderText = "Tìm kiếm file...";
             txtSearch.Size = new Size(368, 48);
             txtSearch.TabIndex = 3;
-            txtSearch.Text = "Tìm kiếm file...";
             txtSearch.TextChanged += txtSearch_TextChanged;
             // 
             // btnDownloadFile
@@ -536,20 +536,20 @@
             lblOnlineCount.ForeColor = Color.Purple;
             lblOnlineCount.Location = new Point(67, 30);
             lblOnlineCount.Name = "lblOnlineCount";
-            lblOnlineCount.Size = new Size(42, 32);
+            lblOnlineCount.Size = new Size(28, 32);
             lblOnlineCount.TabIndex = 2;
-            lblOnlineCount.Text = "25";
+            lblOnlineCount.Text = "0";
             // 
             // lblTitleOnline
             // 
             lblTitleOnline.AutoSize = true;
             lblTitleOnline.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTitleOnline.ForeColor = SystemColors.ActiveCaptionText;
-            lblTitleOnline.Location = new Point(60, 2);
+            lblTitleOnline.Location = new Point(57, 2);
             lblTitleOnline.Name = "lblTitleOnline";
-            lblTitleOnline.Size = new Size(115, 25);
+            lblTitleOnline.Size = new Size(125, 25);
             lblTitleOnline.TabIndex = 1;
-            lblTitleOnline.Text = " Tổng số file";
+            lblTitleOnline.Text = "Người Online";
             lblTitleOnline.Click += label9_Click;
             // 
             // lblIconOnline
@@ -584,9 +584,10 @@
             lblUploadCount.ForeColor = Color.Green;
             lblUploadCount.Location = new Point(54, 30);
             lblUploadCount.Name = "lblUploadCount";
-            lblUploadCount.Size = new Size(42, 32);
+            lblUploadCount.Size = new Size(28, 32);
             lblUploadCount.TabIndex = 2;
-            lblUploadCount.Text = "12";
+            lblUploadCount.Text = "0";
+            lblUploadCount.Click += lblUploadCount_Click_1;
             // 
             // lblTitleUpload
             // 
@@ -633,7 +634,7 @@
             lblDownloadCount.Name = "lblDownloadCount";
             lblDownloadCount.Size = new Size(28, 32);
             lblDownloadCount.TabIndex = 2;
-            lblDownloadCount.Text = "9";
+            lblDownloadCount.Text = "0";
             // 
             // lblTitleDownload
             // 
@@ -677,9 +678,10 @@
             lblTotalFiles.ForeColor = Color.RoyalBlue;
             lblTotalFiles.Location = new Point(67, 30);
             lblTotalFiles.Name = "lblTotalFiles";
-            lblTotalFiles.Size = new Size(42, 32);
+            lblTotalFiles.Size = new Size(28, 32);
             lblTotalFiles.TabIndex = 2;
-            lblTotalFiles.Text = "24";
+            lblTotalFiles.Text = "0";
+            lblTotalFiles.Click += lblTotalFiles_Click;
             // 
             // lblTextFile
             // 

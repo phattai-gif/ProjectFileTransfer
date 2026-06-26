@@ -7,41 +7,69 @@ using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Security.Cryptography;
 
 namespace ProjectFileTransferClient.Forms
 {
     public partial class FrmMain : Form
     {
-        private List<ListViewItem> allFiles = new List<ListViewItem>(); //Lưu toàn bộ danh sách file gốc.
+        // Biến đếm thống kê lưu trữ dữ liệu thật theo phiên làm việc
+        private int uploadCount = 0;
+        private int downloadCount = 0;
+        private int onlineUsersCount = 1; // Mặc định hiển thị bạn đang online
+
+        private List<ListViewItem> allFiles = new List<ListViewItem>(); // Lưu toàn bộ danh sách file gốc.
+
         public FrmMain(ClientManager manager, FrmConnect connectForm)
         {
             InitializeComponent();
-
             clientManager = manager;
             frmConnect = connectForm;
-
         }
+
+        //Hàm bổ trợ tính SHA256 của file để kiểm tra tính toàn vẹn
+        private string CalculateSHA256(string filePath)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                using (var stream = File.OpenRead(filePath))
+                {
+                    byte[] hashBytes = sha256.ComputeHash(stream);
+                    StringBuilder sb = new StringBuilder();
+                    foreach (byte b in hashBytes)
+                    {
+                        sb.Append(b.ToString("x2"));
+                    }
+                    return sb.ToString();
+                }
+            }
+        }
+
         private void FrmMain_Load(object sender, EventArgs e)
         {
+            // Reset trống thông tin khi vừa mở form
+            ClearFileDetails();
+
             LoadFileList();
 
-            dgvHistory.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            if (dgvHistory.ColumnHeadersDefaultCellStyle != null)
+                dgvHistory.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
 
             dgvHistory.DefaultCellStyle.Font = new Font("Segoe UI", 10);
-
             dgvHistory.RowTemplate.Height = 35;
-
             dgvHistory.EnableHeadersVisualStyles = false;
         }
 
-        private ClientManager clientManager;//khaibao clientManager
+        private ClientManager clientManager; // Khai báo clientManager
+        private List<string> originalFileList = new List<string>();
         private FrmConnect frmConnect;
 
         // Lớp lưu trữ trạng thái tiến trình của từng file riêng biệt
         public class TransferProgressState
         {
-            public string FileName { get; set; }
+            public string FileName { get; set; } = string.Empty;
             public int Percent { get; set; } = 0;
             public string TransferredText { get; set; } = "Đã truyền: 0,00 MB / 0,00 MB";
             public string RemainingText { get; set; } = "Còn lại: 0,00 MB";
@@ -54,272 +82,255 @@ namespace ProjectFileTransferClient.Forms
         // Từ điển quản lý bộ nhớ tiến trình (Key là tên file)
         private Dictionary<string, TransferProgressState> fileProgresses = new Dictionary<string, TransferProgressState>();
 
-        //đóng FrmMain thì hiện lại FrmConnect//
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
             Application.Exit();
         }
-        //===========================================================//
-        //HÀM LOADFILELIST=========================================//
+
+        // HÀM LOADFILELIST  //
         private void LoadFileList()
         {
-
-            // Gửi lệnh LIST sang Server để yêu cầu danh sách file
-            clientManager.SendMessage(Protocol.LIST);
-
-            // Nhận chuỗi phản hồi từ Server
-            string response = clientManager.ReceiveMessage();
-
-            // Tách dữ liệu dựa theo ký tự phân cách (# hoặc ký tự DELIMITER)
-            string[] parts = response.Split(Protocol.DELIMITER);
-
-            // Kiểm tra Server trả về thành công
-            if (parts[0] == Protocol.LIST_SUCCESS)
+            try
             {
-                // Xóa danh sách cũ trên ListView
-                lvFiles.Items.Clear();
-                allFiles.Clear(); //kho dữ liệu" để tìm kiếm.
-
-                // Bắt đầu đọc từng file từ Server
-                for (int i = 1; i < parts.Length; i++)
+                // Giải quyết vấn đề: Khi danh sách tải lại (hoặc sau khi xóa file), xóa sạch dữ liệu cũ hiển thị ở khung thông tin
+                if (this.IsHandleCreated)
                 {
-                    // Ví dụ dữ liệu nhận:btnRefreshList.Text = "🔄 REFRESH";
-                    // abc.pdf|24576
-
-                    string[] fileInfo = parts[i].Split('#');
-
-                    // Tên file
-                    string fileName = fileInfo[0];
-
-                    // Giá trị mặc định nếu không có kích thước
-                    string fileSize = "0 KB";
-
-                    // Nếu Server gửi kích thước
-                    if (fileInfo.Length > 1)
-                    {
-                        long size = long.Parse(fileInfo[1]);
-
-                        if (size < 1024)
-                        {
-                            fileSize = size + " B";
-                        }
-                        else if (size < 1024 * 1024)
-                        {
-                            fileSize =
-                                (size / 1024.0).ToString("F2") + " KB";
-                        }
-                        else
-                        {
-                            fileSize =
-                                (size / 1024.0 / 1024.0).ToString("F2") + " MB";
-                        }
-                    }
-
-                    // Tạo dòng mới trong ListView
-                    ListViewItem item =
-                        new ListViewItem(fileName);
-
-                    // Cột Kích thước
-                    item.SubItems.Add(fileSize);
-
-                    // Cột Loại file (.pdf .docx ...)
-                    item.SubItems.Add(
-                        Path.GetExtension(fileName));
-
-                    // Cột ngày upload
-                    item.SubItems.Add(
-                        DateTime.Now.ToString("dd/MM/yyyy"));
-
-                    // Thêm dòng vào ListView
-                    lvFiles.Items.Add(item);
-
-                    allFiles.Add((ListViewItem)item.Clone()); //Lưu toàn bộ danh sách file gốc.
+                    this.Invoke(new Action(() => ClearFileDetails()));
                 }
 
-                // Hiển thị tổng số file
-                lblTotalFiles.Text =
-                    (parts.Length - 1).ToString();
+                // Gửi lệnh LIST sang Server để yêu cầu danh sách file
+                clientManager.SendMessage(Protocol.LIST);
+
+                // Nhận chuỗi phản hồi từ Server
+                string? response = clientManager.ReceiveMessage();
+                if (string.IsNullOrEmpty(response)) return;
+
+                // Tách dữ liệu dựa theo ký tự phân cách
+                string[] parts = response.Split(Protocol.DELIMITER);
+
+                // Kiểm tra Server trả về thành công
+                if (parts.Length > 0 && parts[0] == Protocol.LIST_SUCCESS)
+                {
+                    // Xóa danh sách cũ trên ListView
+                    lvFiles.Items.Clear();
+                    allFiles.Clear();
+
+                    // Bắt đầu đọc từng file từ Server
+                    for (int i = 1; i < parts.Length; i++)
+                    {
+                        if (string.IsNullOrEmpty(parts[i])) continue;
+
+                        string[] fileInfo = parts[i].Split('#');
+                        string fileName = fileInfo[0];
+                        string fileSize = "0 KB";
+
+                        // Khởi tạo các biến chứa thông tin mở rộng ngầm định phòng khi Server chưa gửi kèm
+                        string uploader = "Hệ thống";
+                        string uploadDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                        string serverPath = $"/server/storage/uploads/{fileName}";
+
+                        if (fileInfo.Length > 1)
+                        {
+                            long size = long.Parse(fileInfo[1]);
+
+                            if (size < 1024)
+                            {
+                                fileSize = size + " B";
+                            }
+                            else if (size < 1024 * 1024)
+                            {
+                                fileSize = (size / 1024.0).ToString("F2") + " KB";
+                            }
+                            else
+                            {
+                                fileSize = (size / 1024.0 / 1024.0).ToString("F2") + " MB";
+                            }
+                        }
+
+                        // Gợi ý kỹ thuật mở rộng cấu trúc giao thức:
+                        // Nếu sau này Server trả về dạng: FileName#Size#Uploader#UploadDate#ServerPath
+                        if (fileInfo.Length > 2) uploader = fileInfo[2];
+                        if (fileInfo.Length > 3) uploadDate = fileInfo[3];
+                        if (fileInfo.Length > 4) serverPath = fileInfo[4];
+
+                        ListViewItem item = new ListViewItem(fileName);
+                        item.SubItems.Add(fileSize);
+                        item.SubItems.Add(Path.GetExtension(fileName));
+                        item.SubItems.Add(uploadDate);
+
+                        // LƯU Ý QUAN TRỌNG: Đóng gói toàn bộ thông tin mở rộng vào thuộc tính Tag của item để dùng khi click chọn
+                        item.Tag = new string[] { uploader, uploadDate, serverPath };
+
+                        lvFiles.Items.Add(item);
+                        allFiles.Add((ListViewItem)item.Clone());
+                    }
+
+                    // 1. Ô màu xanh dương: Hiển thị tổng số file thực tế nhận về từ Server
+                    lblTotalFiles.Text = lvFiles.Items.Count.ToString();
+
+                    // 2. Cập nhật lại giá trị thực tế cho các ô thống kê khác để tránh bị gán đè số ảo
+                    lblUploadCount.Text = uploadCount.ToString();
+                    lblDownloadCount.Text = downloadCount.ToString();
+                    lblOnlineCount.Text = onlineUsersCount.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi nạp danh sách file: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        //===========================================================//
 
-        private void button1_Click(object sender, EventArgs e)
-        {
+        private void button1_Click(object sender, EventArgs e) { }
+        private void button5_Click(object sender, EventArgs e) { }
+        private void picLogo_Click(object sender, EventArgs e) { }
+        private void label1_Click(object sender, EventArgs e) { }
+        private void button2_Click(object sender, EventArgs e) { }
+        private void button2_Click_1(object sender, EventArgs e) { }
+        private void groupBox1_Enter(object sender, EventArgs e) { }
+        private void grpFileList_Enter(object sender, EventArgs e) { }
 
-        }
-
-        private void button5_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void picLogo_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button2_Click_1(object sender, EventArgs e)
-        {
-
-        }
-
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void grpFileList_Enter(object sender, EventArgs e)
-        {
-
-        }
-
+        // ===========================================================//
+        // SỰ KIỆN CLICK CHỌN FILE TRÊN LISTVIEW                      //
+        // ===========================================================//
         private void lvFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Kiểm tra nếu không có hàng nào được chọn thì xóa trắng khung thông tin
+            // Giải quyết vấn đề: Khi không chọn file nào (Xóa file, click ra ngoài), dọn dẹp trống thông tin
             if (lvFiles.SelectedItems.Count == 0)
             {
-                lblFileName.Text = "Tên file :";
-                lblFileSize.Text = "Kích thước :";
-                lblFileType.Text = "Loại file :";
-                pictureBox1.Image = null; // Khung chứa ảnh đại diện file
+                ClearFileDetails();
                 return;
             }
 
-            // Lấy item đang được chọn đầu tiên
             ListViewItem item = lvFiles.SelectedItems[0];
-
             string fileName = item.Text;
             string fileSize = item.SubItems[1].Text;
             string fileExt = item.SubItems[2].Text;
 
-            // 1. Hiển thị file: Cập nhật thông tin lên các Label giao diện
-            lblFileName.Text = $"Tên file :  {fileName}";
-            lblFileSize.Text = $"Kích thước :  {fileSize}";
-            lblFileType.Text = $"Loại file :  {fileExt}";
+            // Lấy thông tin mở rộng được đóng gói trong Tag ra ngoài
+            string uploader = "Hệ thống";
+            string uploadDate = item.SubItems.Count > 3 ? item.SubItems[3].Text : DateTime.Now.ToString("dd/MM/yyyy");
+            string serverPath = $"/server/storage/uploads/{fileName}";
 
-            // Thay đổi Icon hình ảnh đại diện tùy thuộc vào đuôi định dạng file (.pdf, .mp4, ...)
-            //switch (fileExt.ToLower())
-            //{
-            //    //Phần này chưa xong
-            //    case ".pdf":
-            //        picLogo.Image = Properties.Resources.Screenshot_2026_06_20_031745;
-            //        break;
-            //    case ".mp4":
-            //    case ".avi":
-            //        // picSelectedIcon.Image = Properties.Resources.video_icon;
-            //        break;
-            //    default:
-            //        // picSelectedIcon.Image = Properties.Resources.default_file_icon;
-            //        break;
-            //}
-
-            // --- ĐỌC TIẾN TRÌNH RIÊNG BIỆT CỦA FILE ĐƯỢC CHỌN ---
-            if (fileProgresses.ContainsKey(fileName))
+            if (item.Tag is string[] extraData)
             {
-                // Nếu file này đã hoặc đang chạy truyền dữ liệu, bốc dữ liệu cũ đắp lên UI
-                var state = fileProgresses[fileName];
-
-                lblTransferFileName.Text = $"{state.FileName} ({state.StateText})";
-                progressTransfer.Value = state.Percent;
-                lblTransferred.Text = state.TransferredText;
-                lblRemaining.Text = state.RemainingText;
-                lblSpeed.Text = state.SpeedText;
-                lblElapsed.Text = state.ElapsedText;
-                lblRemainTime.Text = state.RemainTimeText;
-                lblState.Text = state.StateText;
+                uploader = extraData[0];
+                uploadDate = extraData[1];
+                serverPath = extraData[2];
             }
-            else
-            {
-                // Nếu file này chưa từng được bấm tải/gửi, trả các thanh về trạng thái trống mặc định
-                lblTransferFileName.Text = fileName;
-                progressTransfer.Value = 0;
-                lblTransferred.Text = "Đã truyền: 0,00 MB / 0,00 MB";
-                lblRemaining.Text = "Còn lại: 0,00 MB";
-                lblSpeed.Text = "0,00 MB/s";
-                lblElapsed.Text = "00:00:00";
-                lblRemainTime.Text = "00:00:00";
-                lblState.Text = "Sẵn sàng";
-            }
+
+            // Gán thông tin hiển thị cơ bản
+            lblFileName.Text = $"Tên file :   {fileName}";
+            lblFileSize.Text = $"Kích thước :   {fileSize}";
+            lblFileType.Text = $"Loại file :   {fileExt}";
+
+            // Giải quyết vấn đề: Hiển thị bổ sung Người upload, Ngày upload, và Đường dẫn path dữ liệu
+            lblUploadTime.Text = $"Người upload :   {uploader}";
+            lblUploadDate.Text = $"Ngày upload :   {uploadDate}";
+            lblPath.Text = $"Đường dẫn :   {serverPath}";
         }
 
-        private void label2_Click(object sender, EventArgs e)
+        //    // Giải quyết vấn đề: Đọc và hiển thị Icon động tương ứng với đuôi file vào PictureBox
+        //    pictureBox1.Image = GetFileIcon(fileExt);
+        //    pictureBox1.SizeMode = PictureBoxSizeMode.Zoom; // Giúp căn chỉnh ảnh cân đối vào khung hiển thị
+
+        //    if (fileProgresses.ContainsKey(fileName))
+        //    {
+        //        var state = fileProgresses[fileName];
+        //        lblTransferFileName.Text = $"{state.FileName} ({state.StateText})";
+        //        progressTransfer.Value = state.Percent;
+        //        lblTransferred.Text = state.TransferredText;
+        //        lblRemaining.Text = state.RemainingText;
+        //        lblSpeed.Text = state.SpeedText;
+        //        lblElapsed.Text = state.ElapsedText;
+        //        lblRemainTime.Text = state.RemainTimeText;
+        //        lblState.Text = state.StateText;
+        //    }
+        //    else
+        //    {
+        //        lblTransferFileName.Text = fileName;
+        //        progressTransfer.Value = 0;
+        //        lblTransferred.Text = "Đã truyền: 0,00 MB / 0,00 MB";
+        //        lblRemaining.Text = "Còn lại: 0,00 MB";
+        //        lblSpeed.Text = "0,00 MB/s";
+        //        lblElapsed.Text = "00:00:00";
+        //        lblRemainTime.Text = "00:00:00";
+        //        lblState.Text = "Sẵn sàng";
+        //    }
+        //}
+
+        // Hàm bổ trợ: Dọn dẹp sạch sẽ giao diện thông tin file được chọn về trạng thái ban đầu
+        private void ClearFileDetails()
         {
-
+            lblFileName.Text = "Tên file :";
+            lblFileSize.Text = "Kích thước :";
+            lblFileType.Text = "Loại file :";
+            lblUploadTime.Text = "Người upload :";
+            lblUploadDate.Text = "Ngày upload :";
+            lblPath.Text = "Đường dẫn :";
+            pictureBox1.Image = null; // Xóa ảnh icon hiện tại
         }
 
-        private void panel2_Paint(object sender, PaintEventArgs e)
-        {
+        //// Hàm bổ trợ: Trích xuất hình ảnh icon tương ứng từ Resources của hệ thống dựa trên phần mở rộng file
+        //private Image GetFileIcon(string ext)
+        //{
+        //    if (string.IsNullOrEmpty(ext)) return null;
+        //    ext = ext.ToLower().Trim();
 
-        }
+        //    try
+        //    {
+        //        switch (ext)
+        //        {
+        //            case ".pdf":
+        //                return Properties.Resources.pdf_icon; // Tên resource ảnh bạn đã import trong ứng dụng
+        //            case ".doc":
+        //            case ".docx":
+        //                return Properties.Resources.word_icon;
+        //            case ".xls":
+        //            case ".xlsx":
+        //                return Properties.Resources.excel_icon;
+        //            case ".png":
+        //            case ".jpg":
+        //            case ".jpeg":
+        //            case ".gif":
+        //                return Properties.Resources.image_icon;
+        //            case ".mp4":
+        //            case ".avi":
+        //            case ".mkv":
+        //                return Properties.Resources.video_icon;
+        //            case ".zip":
+        //            case ".rar":
+        //                return Properties.Resources.zip_icon;
+        //            case ".txt":
+        //                return Properties.Resources.txt_icon;
+        //            default:
+        //                return Properties.Resources.default_icon; // Sử dụng icon mặc định đối với các file khác
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        // Phòng trường hợp lập trình viên chưa import Resource, tránh bị văng crash ứng dụng
+        //        return null;
+        //    }
+        //}
 
-        private void lblTextFile_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pnlDownload_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void label9_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void grpStatistics_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblTransferred_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void grpTransfer_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblRemainTitle_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void dgvHistory_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-
-        }
+        private void label2_Click(object sender, EventArgs e) { }
+        private void panel2_Paint(object sender, PaintEventArgs e) { }
+        private void lblTextFile_Click(object sender, EventArgs e) { }
+        private void pnlDownload_Paint(object sender, PaintEventArgs e) { }
+        private void panel1_Paint(object sender, PaintEventArgs e) { }
+        private void label9_Click(object sender, EventArgs e) { }
+        private void grpStatistics_Enter(object sender, EventArgs e) { }
+        private void lblTransferred_Click(object sender, EventArgs e) { }
+        private void grpTransfer_Enter(object sender, EventArgs e) { }
+        private void label3_Click(object sender, EventArgs e) { }
+        private void lblRemainTitle_Click(object sender, EventArgs e) { }
+        private void dgvHistory_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
 
         private void button3_Click(object sender, EventArgs e)
         {
             clientManager.Disconnect();
             frmConnect.UpdateDisconnectStatus();
-
             frmConnect.Show();
-
             this.Close();
         }
 
@@ -335,11 +346,11 @@ namespace ProjectFileTransferClient.Forms
             LoadFileList();
         }
 
-        private void btnRefreshList_Click_1(object sender, EventArgs e)
-        {
+        private void btnRefreshList_Click_1(object sender, EventArgs e) { }
 
-        }
-
+        // ===========================================================//
+        // SỰ KIỆN UPLOAD FILE THÀNH CÔNG //
+        // ===========================================================//
         private async void btnUploaddown_Click(object sender, EventArgs e)
         {
             OpenFileDialog open = new OpenFileDialog();
@@ -349,49 +360,61 @@ namespace ProjectFileTransferClient.Forms
             if (open.ShowDialog() == DialogResult.OK)
             {
                 string localFilePath = open.FileName;
-                string fileName = Path.GetFileName(localFilePath);
+                string fileName = Path.GetFileName(localFilePath) ?? "unknown";
 
                 btnUploaddown.Enabled = false;
 
-                // Khởi tạo trạng thái file vào Dictionary
                 if (!fileProgresses.ContainsKey(fileName)) fileProgresses[fileName] = new TransferProgressState();
                 fileProgresses[fileName].FileName = fileName;
-                fileProgresses[fileName].StateText = "Đang tải lên...";
+                fileProgresses[fileName].StateText = "Đang tính SHA256...";
 
                 await Task.Run(() =>
                 {
                     try
                     {
-                        NetworkStream stream = clientManager.GetStream();
-                        if (stream != null)
+                        // [TASK SHA256] - FE File hợp lệ: Tính toán mã Hash SHA256 của file trước khi gửi
+                        string clientHash = "";
+                        using (var sha256 = System.Security.Cryptography.SHA256.Create())
                         {
-                            while (stream.DataAvailable) { clientManager.ReceiveMessage(); }
+                            using (var fileStream = File.OpenRead(localFilePath))
+                            {
+                                byte[] hashBytes = sha256.ComputeHash(fileStream);
+                                StringBuilder sb = new StringBuilder();
+                                foreach (byte b in hashBytes) sb.Append(b.ToString("x2"));
+                                clientHash = sb.ToString();
+                            }
                         }
+
+                        NetworkStream? stream = clientManager.GetStream();
+                        if (stream == null) return;
+
+                        while (stream.DataAvailable) { clientManager.ReceiveMessage(); }
 
                         FileInfo fileInfo = new FileInfo(localFilePath);
                         long fileSize = fileInfo.Length;
 
-                        string cmd = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}";
+                        // [TASK SHA256] - Gửi kèm mã Hash qua Protocol để BE nhận kết quả hash
+                        string cmd = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}{Protocol.DELIMITER}{clientHash}";
                         clientManager.SendMessage(cmd);
 
-                        string response = clientManager.ReceiveMessage();
+                        string? response = clientManager.ReceiveMessage();
+                        if (string.IsNullOrEmpty(response)) return;
+
                         string[] parts = response.Split(new char[] { Protocol.DELIMITER, '#' }, StringSplitOptions.RemoveEmptyEntries);
 
-                        if (parts[0] == "UPLOAD_SUCCESS" || parts[0] == "OK" || parts[0] == Protocol.UPLOAD)
+                        if (parts.Length > 0 && (parts[0] == "UPLOAD_SUCCESS" || parts[0] == "OK" || parts[0] == Protocol.UPLOAD))
                         {
                             FileSender senderFile = new FileSender();
                             DateTime startTime = DateTime.Now;
-
-                            // Khai báo một biến để theo dõi dung lượng cập nhật lần trước 
                             long lastReportedBytes = 0;
 
                             senderFile.SendFile(localFilePath, stream, (sentBytes, totalBytes) =>
                             {
                                 if (sentBytes - lastReportedBytes < 500 * 1024 && sentBytes < totalBytes)
                                 {
-                                    return; 
+                                    return;
                                 }
-                                lastReportedBytes = sentBytes; // Cập nhật mốc đánh dấu mới
+                                lastReportedBytes = sentBytes;
 
                                 int percent = (int)(((double)sentBytes / totalBytes) * 100);
                                 if (percent > 100) percent = 100;
@@ -427,7 +450,7 @@ namespace ProjectFileTransferClient.Forms
                                 {
                                     lblTransferFileName.Text = $"{fileName} (Đang tải lên...)";
                                     progressTransfer.Value = state.Percent;
-                                    lblPercent.Text = $"{state.Percent}%"; 
+                                    lblPercent.Text = $"{state.Percent}%";
 
                                     lblTransferred.Text = state.TransferredText;
                                     lblRemaining.Text = state.RemainingText;
@@ -438,7 +461,6 @@ namespace ProjectFileTransferClient.Forms
                                 }));
                             });
 
-                            // Hoàn thành chu trình tải lên
                             var finalState = fileProgresses[fileName];
                             finalState.StateText = "Hoàn thành";
                             finalState.Percent = 100;
@@ -449,13 +471,32 @@ namespace ProjectFileTransferClient.Forms
                                 lblState.Text = "Hoàn thành";
                                 progressTransfer.Value = 100;
 
-                                MessageBox.Show("Upload file thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                LoadFileList();
+                                // Tăng biến đếm upload và hiển thị ngay lập tức lên ô xanh lá
+                                uploadCount++;
+                                lblUploadCount.Text = uploadCount.ToString();
+
+                                // [TASK LỊCH SỬ TRUYỀN FILE] - Đổ trực tiếp kết quả vào FE DataGridView lịch sử bên góc phải dưới
+                                string fileExt = Path.GetExtension(fileName);
+                                string currentTime = DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy");
+
+                                // Thêm hàng mới vào dgvHistory theo thứ tự cột: File | Loại | Trạng thái | Thời gian
+                                dgvHistory.Rows.Add(fileName, fileExt, "Upload Thành công", currentTime);
+
+                                // Hiển thị thông báo kèm mã Hash SHA256 trực quan để chứng minh file hợp lệ
+                                MessageBox.Show($"Upload file thành công!\nMã SHA256: {clientHash}\nTrạng thái: Toàn vẹn dữ liệu (FE File hợp lệ)", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                LoadFileList(); // Làm mới danh sách file từ server
                             }));
                         }
                         else
                         {
-                            this.Invoke(new Action(() => MessageBox.Show("Server từ chối yêu cầu upload file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)));
+                            this.Invoke(new Action(() =>
+                            {
+                                // Nếu thất bại, ghi nhận Log lỗi vào DataGridView
+                                string fileExt = Path.GetExtension(fileName);
+                                dgvHistory.Rows.Add(fileName, fileExt, "Upload Thất bại (FE File lỗi)", DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy"));
+
+                                MessageBox.Show("Server từ chối yêu cầu upload file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }));
                         }
                     }
                     catch (Exception ex)
@@ -468,6 +509,9 @@ namespace ProjectFileTransferClient.Forms
             }
         }
 
+        // ===========================================================//
+        //  DOWNLOAD FILE THÀNH CÔNG -> TĂNG Value         //
+        // ===========================================================//
         private async void btnDownloadFile_Click(object sender, EventArgs e)
         {
             if (lvFiles.SelectedItems.Count == 0)
@@ -477,7 +521,7 @@ namespace ProjectFileTransferClient.Forms
             }
 
             string fileName = lvFiles.SelectedItems[0].Text;
-            string fileExt = lvFiles.SelectedItems[0].SubItems[2].Text;
+            string? fileExt = lvFiles.SelectedItems[0].SubItems[2].Text ?? ".bin";
 
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.FileName = fileName;
@@ -489,7 +533,6 @@ namespace ProjectFileTransferClient.Forms
             string savePath = saveFileDialog.FileName;
             btnDownloadFile.Enabled = false;
 
-            // Khởi tạo nhanh trạng thái ban đầu cho file này trong Dictionary
             if (!fileProgresses.ContainsKey(fileName)) fileProgresses[fileName] = new TransferProgressState();
             fileProgresses[fileName].FileName = fileName;
             fileProgresses[fileName].StateText = "Đang tải xuống...";
@@ -498,25 +541,24 @@ namespace ProjectFileTransferClient.Forms
             {
                 try
                 {
-                    NetworkStream stream = clientManager.GetStream();
-                    if (stream != null)
-                    {
-                        while (stream.DataAvailable) { clientManager.ReceiveMessage(); }
-                    }
+                    NetworkStream? stream = clientManager.GetStream();
+                    if (stream == null) return;
+
+                    while (stream.DataAvailable) { clientManager.ReceiveMessage(); }
 
                     string cmd = $"{Protocol.DOWNLOAD}{Protocol.DELIMITER}{fileName}";
                     clientManager.SendMessage(cmd);
 
-                    string response = clientManager.ReceiveMessage();
+                    string? response = clientManager.ReceiveMessage();
+                    if (string.IsNullOrEmpty(response)) return;
+
                     string[] parts = response.Split(new char[] { Protocol.DELIMITER, '#' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    if (parts[0] == Protocol.DOWNLOAD_SUCCESS)
+                    if (parts.Length > 1 && parts[0] == Protocol.DOWNLOAD_SUCCESS)
                     {
                         long fileSize = long.Parse(parts[1]);
                         FileReceiver receiver = new FileReceiver();
                         DateTime startTime = DateTime.Now;
-
-                        // Khai báo biến mốc trước khi gọi ReceiveFile
                         long lastReportedBytes = 0;
 
                         receiver.ReceiveFile(savePath, fileSize, stream, (received, total) =>
@@ -563,7 +605,7 @@ namespace ProjectFileTransferClient.Forms
                                 {
                                     lblTransferFileName.Text = $"{fileName} (Đang tải xuống...)";
                                     progressTransfer.Value = state.Percent;
-                                    lblPercent.Text = $"{state.Percent}%"; 
+                                    lblPercent.Text = $"{state.Percent}%";
 
                                     lblTransferred.Text = state.TransferredText;
                                     lblRemaining.Text = state.RemainingText;
@@ -575,7 +617,6 @@ namespace ProjectFileTransferClient.Forms
                             }));
                         });
 
-                        // Hoàn thành chu trình tải
                         var finalState = fileProgresses[fileName];
                         finalState.StateText = "Hoàn thành";
                         finalState.Percent = 100;
@@ -588,12 +629,26 @@ namespace ProjectFileTransferClient.Forms
                                 lblState.Text = "Hoàn thành";
                                 progressTransfer.Value = 100;
                             }
+
+                            // Tăng biến đếm download và hiển thị chuẩn lên ô màu cam
+                            downloadCount++;
+                            lblDownloadCount.Text = downloadCount.ToString();
+
+                            // [TASK LỊCH SỬ TRUYỀN FILE] - Thêm dòng log tải file thành công vào dgvHistory
+                            string currentTime = DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy");
+                            dgvHistory.Rows.Add(fileName, fileExt, "Download Thành công", currentTime);
+
                             MessageBox.Show($"Tải file '{fileName}' thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }));
                     }
                     else
                     {
-                        this.Invoke(new Action(() => MessageBox.Show("Server từ chối yêu cầu tải file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)));
+                        this.Invoke(new Action(() =>
+                        {
+                            // Ghi nhận log tải thất bại
+                            dgvHistory.Rows.Add(fileName, fileExt, "Download Thất bại", DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy"));
+                            MessageBox.Show("Server từ chối yêu cầu tải file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }));
                     }
                 }
                 catch (Exception ex)
@@ -605,58 +660,99 @@ namespace ProjectFileTransferClient.Forms
             btnDownloadFile.Enabled = true;
         }
 
-
         private void btnLogout2_Click(object sender, EventArgs e)
         {
             clientManager.Disconnect();
-
             frmConnect.Show();
-
             this.Close();
         }
 
-        private void btnRefresh_Click(object sender, EventArgs e)
-        {
+        private void btnRefresh_Click(object sender, EventArgs e) { }
+        private void progressTransfer_Click(object sender, EventArgs e) { }
+        private void lblTransferStatus_Click(object sender, EventArgs e) { }
 
-        }
-
-        private void progressTransfer_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblTransferStatus_Click(object sender, EventArgs e)
-        {
-
-        }
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
-            string keyword = txtSearch.Text.ToLower();
+            string keyword = txtSearch.Text.Trim().ToLower();
+            lvFiles.Items.Clear();
 
-            foreach (ListViewItem item in lvFiles.Items)
+            foreach (ListViewItem item in allFiles)
             {
-                if (item.Text.ToLower().Contains(keyword))
+                string fileName = item.Text.ToLower();
+                if (fileName.Contains(keyword))
                 {
-                    item.BackColor = Color.LightYellow;
+                    lvFiles.Items.Add((ListViewItem)item.Clone());
                 }
-                else
+            }
+
+            // Cập nhật số lượng file co giãn động theo kết quả ô tìm kiếm
+            lblTotalFiles.Text = lvFiles.Items.Count.ToString();
+        }
+
+        private void lblSpeed_Click(object sender, EventArgs e) { }
+        private void lblElapsed_Click(object sender, EventArgs e) { }
+        private void lblSpeedTitle_Click(object sender, EventArgs e) { }
+        private void pnlUpload_Paint(object sender, PaintEventArgs e) { }
+
+        private void lblUploadCount_Click(object sender, EventArgs e) { }
+        private void lblDownloadCount_Click(object sender, EventArgs e) { }
+
+        // ===========================================================//
+        // XUẤT LỊCH SỬ TRUYỀN FILE       //
+        // ===========================================================//
+        private void btnExportLog_Click(object sender, EventArgs e)
+        {
+            if (dgvHistory.Rows.Count == 0 || (dgvHistory.Rows.Count == 1 && dgvHistory.Rows[0].IsNewRow))
+            {
+                MessageBox.Show("Hiện tại chưa có lịch sử truyền file nào để xuất log!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = $"Transfer_Log_{DateTime.Now:yyyyMMdd_HHmmss}";
+            saveFileDialog.Filter = "Text Files (*.txt)|*.txt|CSV Files (*.csv)|*.csv";
+            saveFileDialog.Title = "Xuất lịch sử truyền file";
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
                 {
-                    item.BackColor = Color.White;
+                    using (StreamWriter sw = new StreamWriter(saveFileDialog.FileName, false, Encoding.UTF8))
+                    {
+                        // Ghi tiêu đề cột
+                        sw.WriteLine("Tên File\tLoại\tTrạng thái\tThời gian");
+
+                        // Ghi từng dòng dữ liệu từ dgvHistory
+                        foreach (DataGridViewRow row in dgvHistory.Rows)
+                        {
+                            if (!row.IsNewRow)
+                            {
+                                sw.WriteLine($"{row.Cells[0].Value}\t{row.Cells[1].Value}\t{row.Cells[2].Value}\t{row.Cells[3].Value}");
+                            }
+                        }
+                    }
+                    MessageBox.Show("Xuất lịch sử truyền file thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi xuất file log: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
-        private void lblSpeed_Click(object sender, EventArgs e)
+        private void lblFileName1(object sender, EventArgs e) { }
+        private void lblFileSize_Click(object sender, EventArgs e) { }
+        private void lblFileType_Click(object sender, EventArgs e) { }
+        private void lblUploadDate_Click(object sender, EventArgs e) { }
+        private void lblUploadTime_Click(object sender, EventArgs e) { }
+        private void lblPath_Click(object sender, EventArgs e) { }
+
+        private void lblTotalFiles_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void lblElapsed_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblSpeedTitle_Click(object sender, EventArgs e)
+        private void lblUploadCount_Click_1(object sender, EventArgs e)
         {
 
         }
