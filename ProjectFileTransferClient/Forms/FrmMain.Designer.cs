@@ -278,7 +278,6 @@
             btnDownload.TabIndex = 4;
             btnDownload.Text = "📥 Download";
             btnDownload.UseVisualStyleBackColor = false;
-            btnDownloadFile.Click += btnDownloadFile_Click;
             // 
             // btnUpload
             // 
@@ -368,6 +367,7 @@
             txtSearch.Size = new Size(368, 48);
             txtSearch.TabIndex = 3;
             txtSearch.Text = "Tìm kiếm file...";
+            txtSearch.TextChanged += txtSearch_TextChanged;
             // 
             // btnDownloadFile
             // 

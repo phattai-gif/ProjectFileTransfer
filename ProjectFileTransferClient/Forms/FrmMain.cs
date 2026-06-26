@@ -13,6 +13,7 @@ namespace ProjectFileTransferClient.Forms
 {
     public partial class FrmMain : Form
     {
+        private List<ListViewItem> allFiles =new List<ListViewItem>(); //Lưu toàn bộ danh sách file gốc.
         public FrmMain(ClientManager manager, FrmConnect connectForm)
         {
             InitializeComponent();
@@ -50,7 +51,7 @@ namespace ProjectFileTransferClient.Forms
         //HÀM LOADFILELIST=========================================//
         private void LoadFileList()
         {
-          
+
             // Gửi lệnh LIST sang Server để yêu cầu danh sách file
             clientManager.SendMessage(Protocol.LIST);
 
@@ -65,6 +66,7 @@ namespace ProjectFileTransferClient.Forms
             {
                 // Xóa danh sách cũ trên ListView
                 lvFiles.Items.Clear();
+                allFiles.Clear(); //kho dữ liệu" để tìm kiếm.
 
                 // Bắt đầu đọc từng file từ Server
                 for (int i = 1; i < parts.Length; i++)
@@ -72,11 +74,10 @@ namespace ProjectFileTransferClient.Forms
                     // Ví dụ dữ liệu nhận:btnRefreshList.Text = "🔄 REFRESH";
                     // abc.pdf|24576
 
-                    string[] fileInfo =parts[i].Split('#');
+                    string[] fileInfo = parts[i].Split('#');
 
                     // Tên file
-                    string fileName =
-                        fileInfo[0];
+                    string fileName = fileInfo[0];
 
                     // Giá trị mặc định nếu không có kích thước
                     string fileSize = "0 KB";
@@ -119,6 +120,8 @@ namespace ProjectFileTransferClient.Forms
 
                     // Thêm dòng vào ListView
                     lvFiles.Items.Add(item);
+
+                    allFiles.Add((ListViewItem)item.Clone()); //Lưu toàn bộ danh sách file gốc.
                 }
 
                 // Hiển thị tổng số file
@@ -447,6 +450,22 @@ namespace ProjectFileTransferClient.Forms
         private void lblTransferStatus_Click(object sender, EventArgs e)
         {
 
+        }
+        private void txtSearch_TextChanged(object sender, EventArgs e)
+        {
+            string keyword = txtSearch.Text.ToLower();
+
+            foreach (ListViewItem item in lvFiles.Items)
+            {
+                if (item.Text.ToLower().Contains(keyword))
+                {
+                    item.BackColor = Color.LightYellow;
+                }
+                else
+                {
+                    item.BackColor = Color.White;
+                }
+            }
         }
     }
 }
