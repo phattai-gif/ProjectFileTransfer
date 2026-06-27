@@ -31,10 +31,18 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             pnlSidebar = new Panel();
             pnlConnection = new Panel();
-            ConnectionInfo = new Label();
+            lblSidebarTimeConnect = new Label();
+            lblSidebarCodePort = new Label();
+            lblSidebarIPSever = new Label();
+            lblSidebarUser = new Label();
+            lblSidebarConnect = new Label();
+            lblSidebarTime = new Label();
+            lblSidebarPort = new Label();
+            lblSidebarIP = new Label();
+            lblSidebarName = new Label();
+            lblSidebarStatus = new Label();
             btnSettings = new Button();
             picLogo = new PictureBox();
-            btnLogout1 = new Button();
             btnNotify = new Button();
             btnRefresh = new Button();
             btnHistory = new Button();
@@ -45,6 +53,7 @@
             lblTitle1 = new Label();
             lblTitle = new Label();
             pnlTopBar = new Panel();
+            btnDeleteList = new Button();
             btnRefreshList = new Button();
             txtSearch = new TextBox();
             btnDownloadFile = new Button();
@@ -139,7 +148,6 @@
             pnlSidebar.Controls.Add(pnlConnection);
             pnlSidebar.Controls.Add(btnSettings);
             pnlSidebar.Controls.Add(picLogo);
-            pnlSidebar.Controls.Add(btnLogout1);
             pnlSidebar.Controls.Add(btnNotify);
             pnlSidebar.Controls.Add(btnRefresh);
             pnlSidebar.Controls.Add(btnHistory);
@@ -157,24 +165,132 @@
             // pnlConnection
             // 
             pnlConnection.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            pnlConnection.Controls.Add(ConnectionInfo);
+            pnlConnection.Controls.Add(lblSidebarTimeConnect);
+            pnlConnection.Controls.Add(lblSidebarCodePort);
+            pnlConnection.Controls.Add(lblSidebarIPSever);
+            pnlConnection.Controls.Add(lblSidebarUser);
+            pnlConnection.Controls.Add(lblSidebarConnect);
+            pnlConnection.Controls.Add(lblSidebarTime);
+            pnlConnection.Controls.Add(lblSidebarPort);
+            pnlConnection.Controls.Add(lblSidebarIP);
+            pnlConnection.Controls.Add(lblSidebarName);
+            pnlConnection.Controls.Add(lblSidebarStatus);
             pnlConnection.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            pnlConnection.Location = new Point(3, 587);
+            pnlConnection.Location = new Point(3, 541);
             pnlConnection.Name = "pnlConnection";
-            pnlConnection.Size = new Size(361, 262);
+            pnlConnection.Size = new Size(241, 262);
             pnlConnection.TabIndex = 0;
             // 
-            // ConnectionInfo
+            // lblSidebarTimeConnect
             // 
-            ConnectionInfo.AutoSize = true;
-            ConnectionInfo.BackColor = Color.Transparent;
-            ConnectionInfo.ForeColor = SystemColors.ButtonFace;
-            ConnectionInfo.Location = new Point(13, 13);
-            ConnectionInfo.Name = "ConnectionInfo";
-            ConnectionInfo.Size = new Size(162, 168);
-            ConnectionInfo.TabIndex = 0;
-            ConnectionInfo.Text = "KẾT NỐI\r\n\U0001f7e2 Connected\r\nNgười dùng:\r\nIP Server:\r\nPort:\r\nThời gian kết nối:";
-            ConnectionInfo.Click += label1_Click;
+            lblSidebarTimeConnect.AutoSize = true;
+            lblSidebarTimeConnect.Font = new Font("Segoe UI", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarTimeConnect.ForeColor = SystemColors.Control;
+            lblSidebarTimeConnect.Location = new Point(10, 192);
+            lblSidebarTimeConnect.Name = "lblSidebarTimeConnect";
+            lblSidebarTimeConnect.Size = new Size(147, 21);
+            lblSidebarTimeConnect.TabIndex = 10;
+            lblSidebarTimeConnect.Text = "Thời gian kết nối :";
+            // 
+            // lblSidebarCodePort
+            // 
+            lblSidebarCodePort.AutoSize = true;
+            lblSidebarCodePort.Font = new Font("Segoe UI", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarCodePort.ForeColor = SystemColors.Control;
+            lblSidebarCodePort.Location = new Point(13, 159);
+            lblSidebarCodePort.Name = "lblSidebarCodePort";
+            lblSidebarCodePort.Size = new Size(106, 21);
+            lblSidebarCodePort.TabIndex = 9;
+            lblSidebarCodePort.Text = "Port               :";
+            // 
+            // lblSidebarIPSever
+            // 
+            lblSidebarIPSever.AutoSize = true;
+            lblSidebarIPSever.Font = new Font("Segoe UI", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarIPSever.ForeColor = SystemColors.Control;
+            lblSidebarIPSever.Location = new Point(13, 121);
+            lblSidebarIPSever.Name = "lblSidebarIPSever";
+            lblSidebarIPSever.Size = new Size(111, 21);
+            lblSidebarIPSever.TabIndex = 8;
+            lblSidebarIPSever.Text = "IP Sever         :";
+            lblSidebarIPSever.Click += label2_Click_1;
+            // 
+            // lblSidebarUser
+            // 
+            lblSidebarUser.AutoSize = true;
+            lblSidebarUser.Font = new Font("Segoe UI", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarUser.ForeColor = SystemColors.Control;
+            lblSidebarUser.Location = new Point(13, 85);
+            lblSidebarUser.Name = "lblSidebarUser";
+            lblSidebarUser.Size = new Size(111, 21);
+            lblSidebarUser.TabIndex = 7;
+            lblSidebarUser.Text = "Người dùng :";
+            // 
+            // lblSidebarConnect
+            // 
+            lblSidebarConnect.AutoSize = true;
+            lblSidebarConnect.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarConnect.ForeColor = SystemColors.Control;
+            lblSidebarConnect.Location = new Point(13, 11);
+            lblSidebarConnect.Name = "lblSidebarConnect";
+            lblSidebarConnect.Size = new Size(78, 28);
+            lblSidebarConnect.TabIndex = 6;
+            lblSidebarConnect.Text = "kết nối";
+            // 
+            // lblSidebarTime
+            // 
+            lblSidebarTime.AutoSize = true;
+            lblSidebarTime.Font = new Font("Segoe UI", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarTime.ForeColor = Color.Green;
+            lblSidebarTime.Location = new Point(162, 193);
+            lblSidebarTime.Name = "lblSidebarTime";
+            lblSidebarTime.Size = new Size(48, 21);
+            lblSidebarTime.TabIndex = 5;
+            lblSidebarTime.Text = "Time";
+            // 
+            // lblSidebarPort
+            // 
+            lblSidebarPort.AutoSize = true;
+            lblSidebarPort.Font = new Font("Segoe UI", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarPort.ForeColor = SystemColors.Control;
+            lblSidebarPort.Location = new Point(124, 159);
+            lblSidebarPort.Name = "lblSidebarPort";
+            lblSidebarPort.Size = new Size(46, 21);
+            lblSidebarPort.TabIndex = 4;
+            lblSidebarPort.Text = "Port ";
+            // 
+            // lblSidebarIP
+            // 
+            lblSidebarIP.AutoSize = true;
+            lblSidebarIP.Font = new Font("Segoe UI", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarIP.ForeColor = SystemColors.Control;
+            lblSidebarIP.Location = new Point(124, 124);
+            lblSidebarIP.Name = "lblSidebarIP";
+            lblSidebarIP.Size = new Size(75, 21);
+            lblSidebarIP.TabIndex = 3;
+            lblSidebarIP.Text = "IP Sever ";
+            // 
+            // lblSidebarName
+            // 
+            lblSidebarName.AutoSize = true;
+            lblSidebarName.Font = new Font("Segoe UI", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarName.ForeColor = SystemColors.Control;
+            lblSidebarName.Location = new Point(124, 85);
+            lblSidebarName.Name = "lblSidebarName";
+            lblSidebarName.Size = new Size(56, 21);
+            lblSidebarName.TabIndex = 2;
+            lblSidebarName.Text = "Name";
+            // 
+            // lblSidebarStatus
+            // 
+            lblSidebarStatus.AutoSize = true;
+            lblSidebarStatus.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSidebarStatus.ForeColor = SystemColors.Control;
+            lblSidebarStatus.Location = new Point(12, 46);
+            lblSidebarStatus.Name = "lblSidebarStatus";
+            lblSidebarStatus.Size = new Size(152, 28);
+            lblSidebarStatus.TabIndex = 0;
+            lblSidebarStatus.Text = "🔴 Trạng Thái ";
             // 
             // btnSettings
             // 
@@ -199,19 +315,6 @@
             picLogo.TabIndex = 0;
             picLogo.TabStop = false;
             picLogo.Click += picLogo_Click;
-            // 
-            // btnLogout1
-            // 
-            btnLogout1.BackColor = Color.Transparent;
-            btnLogout1.FlatAppearance.BorderSize = 0;
-            btnLogout1.FlatStyle = FlatStyle.Flat;
-            btnLogout1.ForeColor = SystemColors.Control;
-            btnLogout1.Location = new Point(-30, 542);
-            btnLogout1.Name = "btnLogout1";
-            btnLogout1.Size = new Size(241, 50);
-            btnLogout1.TabIndex = 9;
-            btnLogout1.Text = "🚪 Logout";
-            btnLogout1.UseVisualStyleBackColor = false;
             // 
             // btnNotify
             // 
@@ -333,6 +436,7 @@
             // pnlTopBar
             // 
             pnlTopBar.BackColor = Color.WhiteSmoke;
+            pnlTopBar.Controls.Add(btnDeleteList);
             pnlTopBar.Controls.Add(btnRefreshList);
             pnlTopBar.Controls.Add(txtSearch);
             pnlTopBar.Controls.Add(btnDownloadFile);
@@ -342,12 +446,26 @@
             pnlTopBar.Size = new Size(1302, 80);
             pnlTopBar.TabIndex = 1;
             // 
+            // btnDeleteList
+            // 
+            btnDeleteList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnDeleteList.BackColor = Color.Crimson;
+            btnDeleteList.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnDeleteList.ForeColor = SystemColors.Control;
+            btnDeleteList.Location = new Point(586, 11);
+            btnDeleteList.Name = "btnDeleteList";
+            btnDeleteList.Size = new Size(161, 59);
+            btnDeleteList.TabIndex = 6;
+            btnDeleteList.Text = " ⛒ Delete File";
+            btnDeleteList.UseVisualStyleBackColor = false;
+            btnDeleteList.Click += btnDeleteList_Click;
+            // 
             // btnRefreshList
             // 
             btnRefreshList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnRefreshList.BackColor = Color.RoyalBlue;
             btnRefreshList.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnRefreshList.Location = new Point(421, 10);
+            btnRefreshList.Location = new Point(401, 10);
             btnRefreshList.Name = "btnRefreshList";
             btnRefreshList.Size = new Size(178, 59);
             btnRefreshList.TabIndex = 5;
@@ -358,7 +476,7 @@
             // txtSearch
             // 
             txtSearch.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            txtSearch.Location = new Point(659, 20);
+            txtSearch.Location = new Point(772, 20);
             txtSearch.Multiline = true;
             txtSearch.Name = "txtSearch";
             txtSearch.PlaceholderText = "Tìm kiếm file...";
@@ -373,7 +491,7 @@
             btnDownloadFile.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnDownloadFile.Location = new Point(218, 9);
             btnDownloadFile.Name = "btnDownloadFile";
-            btnDownloadFile.Size = new Size(183, 59);
+            btnDownloadFile.Size = new Size(174, 59);
             btnDownloadFile.TabIndex = 4;
             btnDownloadFile.Text = "📤 DOWNLOAD ";
             btnDownloadFile.UseVisualStyleBackColor = false;
@@ -386,7 +504,7 @@
             btnUploaddown.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnUploaddown.Location = new Point(17, 10);
             btnUploaddown.Name = "btnUploaddown";
-            btnUploaddown.Size = new Size(186, 59);
+            btnUploaddown.Size = new Size(189, 59);
             btnUploaddown.TabIndex = 3;
             btnUploaddown.Text = "📤 UPLOAD FILE";
             btnUploaddown.UseVisualStyleBackColor = false;
@@ -394,7 +512,7 @@
             // 
             // btnLogout2
             // 
-            btnLogout2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            btnLogout2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnLogout2.BackColor = Color.Red;
             btnLogout2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnLogout2.ForeColor = SystemColors.ButtonHighlight;
@@ -444,9 +562,9 @@
             grpHistory.Controls.Add(dgvHistory);
             grpHistory.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpHistory.ForeColor = Color.RoyalBlue;
-            grpHistory.Location = new Point(825, 458);
+            grpHistory.Location = new Point(761, 458);
             grpHistory.Name = "grpHistory";
-            grpHistory.Size = new Size(492, 262);
+            grpHistory.Size = new Size(556, 262);
             grpHistory.TabIndex = 2;
             grpHistory.TabStop = false;
             grpHistory.Text = "LỊCH SỬ TRUYỀN FILE GẦN ĐÂY";
@@ -454,6 +572,7 @@
             // dgvHistory
             // 
             dgvHistory.AllowUserToAddRows = false;
+            dgvHistory.AllowUserToOrderColumns = true;
             dgvHistory.BackgroundColor = SystemColors.ButtonFace;
             dgvHistory.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvHistory.Columns.AddRange(new DataGridViewColumn[] { colHistoryFile, colHistoryType, colHistoryStatus, colHistoryTime });
@@ -466,7 +585,7 @@
             dgvHistory.RowHeadersVisible = false;
             dgvHistory.RowHeadersWidth = 62;
             dgvHistory.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvHistory.Size = new Size(486, 232);
+            dgvHistory.Size = new Size(550, 232);
             dgvHistory.TabIndex = 0;
             dgvHistory.CellContentClick += dgvHistory_CellContentClick;
             // 
@@ -476,7 +595,7 @@
             colHistoryFile.MinimumWidth = 8;
             colHistoryFile.Name = "colHistoryFile";
             colHistoryFile.ReadOnly = true;
-            colHistoryFile.Width = 180;
+            colHistoryFile.Width = 220;
             // 
             // colHistoryType
             // 
@@ -484,7 +603,7 @@
             colHistoryType.MinimumWidth = 8;
             colHistoryType.Name = "colHistoryType";
             colHistoryType.ReadOnly = true;
-            colHistoryType.Width = 60;
+            colHistoryType.Width = 80;
             // 
             // colHistoryStatus
             // 
@@ -492,7 +611,7 @@
             colHistoryStatus.MinimumWidth = 8;
             colHistoryStatus.Name = "colHistoryStatus";
             colHistoryStatus.ReadOnly = true;
-            colHistoryStatus.Width = 150;
+            colHistoryStatus.Width = 170;
             // 
             // colHistoryTime
             // 
@@ -500,7 +619,7 @@
             colHistoryTime.MinimumWidth = 8;
             colHistoryTime.Name = "colHistoryTime";
             colHistoryTime.ReadOnly = true;
-            colHistoryTime.Width = 90;
+            colHistoryTime.Width = 110;
             // 
             // grpStatistics
             // 
@@ -512,9 +631,9 @@
             grpStatistics.Controls.Add(pnlTotalFile);
             grpStatistics.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpStatistics.ForeColor = Color.RoyalBlue;
-            grpStatistics.Location = new Point(825, 242);
+            grpStatistics.Location = new Point(761, 236);
             grpStatistics.Name = "grpStatistics";
-            grpStatistics.Size = new Size(478, 210);
+            grpStatistics.Size = new Size(553, 210);
             grpStatistics.TabIndex = 2;
             grpStatistics.TabStop = false;
             grpStatistics.Text = "THỐNG KÊ";
@@ -527,10 +646,11 @@
             pnlOnline.Controls.Add(lblOnlineCount);
             pnlOnline.Controls.Add(lblTitleOnline);
             pnlOnline.Controls.Add(lblIconOnline);
-            pnlOnline.Location = new Point(263, 122);
+            pnlOnline.Location = new Point(296, 122);
             pnlOnline.Name = "pnlOnline";
             pnlOnline.Size = new Size(184, 72);
             pnlOnline.TabIndex = 3;
+            pnlOnline.Paint += pnlOnline_Paint;
             // 
             // lblOnlineCount
             // 
@@ -575,7 +695,7 @@
             pnlUpload.Controls.Add(lblTitleUpload);
             pnlUpload.Controls.Add(lblIconUpload);
             pnlUpload.ForeColor = Color.RoyalBlue;
-            pnlUpload.Location = new Point(263, 34);
+            pnlUpload.Location = new Point(296, 34);
             pnlUpload.Name = "pnlUpload";
             pnlUpload.Size = new Size(184, 72);
             pnlUpload.TabIndex = 4;
@@ -622,7 +742,7 @@
             pnlDownload.Controls.Add(lblDownloadCount);
             pnlDownload.Controls.Add(lblTitleDownload);
             pnlDownload.Controls.Add(lblIconDownload);
-            pnlDownload.Location = new Point(32, 122);
+            pnlDownload.Location = new Point(65, 122);
             pnlDownload.Name = "pnlDownload";
             pnlDownload.Size = new Size(184, 72);
             pnlDownload.TabIndex = 3;
@@ -669,7 +789,7 @@
             pnlTotalFile.Controls.Add(lblTotalFiles);
             pnlTotalFile.Controls.Add(lblTextFile);
             pnlTotalFile.Controls.Add(lblIconFile);
-            pnlTotalFile.Location = new Point(32, 34);
+            pnlTotalFile.Location = new Point(65, 34);
             pnlTotalFile.Name = "pnlTotalFile";
             pnlTotalFile.Size = new Size(184, 72);
             pnlTotalFile.TabIndex = 0;
@@ -729,7 +849,7 @@
             grpTransfer.ForeColor = Color.RoyalBlue;
             grpTransfer.Location = new Point(19, 417);
             grpTransfer.Name = "grpTransfer";
-            grpTransfer.Size = new Size(784, 349);
+            grpTransfer.Size = new Size(710, 349);
             grpTransfer.TabIndex = 2;
             grpTransfer.TabStop = false;
             grpTransfer.Text = "TIẾN TRÌNH TRUYỀN FILE";
@@ -737,10 +857,11 @@
             // 
             // pnlRemainTime
             // 
+            pnlRemainTime.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             pnlRemainTime.BackColor = Color.WhiteSmoke;
             pnlRemainTime.Controls.Add(lblRemainTime);
             pnlRemainTime.Controls.Add(lblRemainTitle);
-            pnlRemainTime.Location = new Point(383, 198);
+            pnlRemainTime.Location = new Point(358, 211);
             pnlRemainTime.Name = "pnlRemainTime";
             pnlRemainTime.Size = new Size(157, 68);
             pnlRemainTime.TabIndex = 11;
@@ -758,17 +879,21 @@
             // 
             // lblRemainTitle
             // 
-            lblRemainTitle.Location = new Point(0, 0);
+            lblRemainTitle.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblRemainTitle.ForeColor = SystemColors.ActiveCaptionText;
+            lblRemainTitle.Location = new Point(17, 3);
             lblRemainTitle.Name = "lblRemainTitle";
-            lblRemainTitle.Size = new Size(100, 23);
+            lblRemainTitle.Size = new Size(124, 23);
             lblRemainTitle.TabIndex = 2;
+            lblRemainTitle.Text = "Thời gian còn lại";
             // 
             // pnlState
             // 
+            pnlState.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             pnlState.BackColor = Color.WhiteSmoke;
             pnlState.Controls.Add(lblState);
             pnlState.Controls.Add(lblStateTitle);
-            pnlState.Location = new Point(547, 197);
+            pnlState.Location = new Point(522, 210);
             pnlState.Name = "pnlState";
             pnlState.Size = new Size(163, 68);
             pnlState.TabIndex = 10;
@@ -789,7 +914,7 @@
             lblStateTitle.AutoSize = true;
             lblStateTitle.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblStateTitle.ForeColor = SystemColors.ActiveCaptionText;
-            lblStateTitle.Location = new Point(43, 7);
+            lblStateTitle.Location = new Point(43, 5);
             lblStateTitle.Name = "lblStateTitle";
             lblStateTitle.Size = new Size(79, 21);
             lblStateTitle.TabIndex = 0;
@@ -797,10 +922,11 @@
             // 
             // pnlElapsed
             // 
+            pnlElapsed.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             pnlElapsed.BackColor = Color.WhiteSmoke;
             pnlElapsed.Controls.Add(lblElapsed);
             pnlElapsed.Controls.Add(lblElapsedTitle);
-            pnlElapsed.Location = new Point(219, 198);
+            pnlElapsed.Location = new Point(194, 211);
             pnlElapsed.Name = "pnlElapsed";
             pnlElapsed.Size = new Size(157, 68);
             pnlElapsed.TabIndex = 9;
@@ -831,10 +957,11 @@
             // 
             // pnlSpeed
             // 
+            pnlSpeed.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             pnlSpeed.BackColor = Color.WhiteSmoke;
             pnlSpeed.Controls.Add(lblSpeed);
             pnlSpeed.Controls.Add(lblSpeedTitle);
-            pnlSpeed.Location = new Point(45, 199);
+            pnlSpeed.Location = new Point(20, 212);
             pnlSpeed.Name = "pnlSpeed";
             pnlSpeed.Size = new Size(167, 68);
             pnlSpeed.TabIndex = 8;
@@ -865,9 +992,10 @@
             // 
             // lblRemaining
             // 
+            lblRemaining.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             lblRemaining.AutoSize = true;
             lblRemaining.ForeColor = SystemColors.ActiveCaptionText;
-            lblRemaining.Location = new Point(590, 126);
+            lblRemaining.Location = new Point(565, 139);
             lblRemaining.Name = "lblRemaining";
             lblRemaining.Size = new Size(124, 25);
             lblRemaining.TabIndex = 7;
@@ -877,7 +1005,7 @@
             // 
             lblTransferred.AutoSize = true;
             lblTransferred.ForeColor = SystemColors.ActiveCaptionText;
-            lblTransferred.Location = new Point(168, 125);
+            lblTransferred.Location = new Point(143, 138);
             lblTransferred.Name = "lblTransferred";
             lblTransferred.Size = new Size(212, 25);
             lblTransferred.TabIndex = 6;
@@ -886,10 +1014,11 @@
             // 
             // lblPercent
             // 
+            lblPercent.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             lblPercent.AutoSize = true;
             lblPercent.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblPercent.ForeColor = SystemColors.ActiveCaptionText;
-            lblPercent.Location = new Point(665, 85);
+            lblPercent.Location = new Point(640, 98);
             lblPercent.Name = "lblPercent";
             lblPercent.Size = new Size(41, 28);
             lblPercent.TabIndex = 5;
@@ -897,7 +1026,8 @@
             // 
             // progressTransfer
             // 
-            progressTransfer.Location = new Point(171, 88);
+            progressTransfer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            progressTransfer.Location = new Point(146, 101);
             progressTransfer.Name = "progressTransfer";
             progressTransfer.Size = new Size(488, 25);
             progressTransfer.TabIndex = 4;
@@ -915,10 +1045,11 @@
             // 
             // lblTransferFileName
             // 
+            lblTransferFileName.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lblTransferFileName.AutoSize = true;
             lblTransferFileName.Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTransferFileName.ForeColor = SystemColors.ActiveCaptionText;
-            lblTransferFileName.Location = new Point(168, 50);
+            lblTransferFileName.Location = new Point(143, 63);
             lblTransferFileName.Name = "lblTransferFileName";
             lblTransferFileName.Size = new Size(222, 30);
             lblTransferFileName.TabIndex = 2;
@@ -926,8 +1057,9 @@
             // 
             // pictureBox2
             // 
+            pictureBox2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pictureBox2.Image = (Image)resources.GetObject("pictureBox2.Image");
-            pictureBox2.Location = new Point(59, 50);
+            pictureBox2.Location = new Point(34, 63);
             pictureBox2.Name = "pictureBox2";
             pictureBox2.Size = new Size(97, 112);
             pictureBox2.SizeMode = PictureBoxSizeMode.AutoSize;
@@ -946,9 +1078,9 @@
             grpFileInfo.Controls.Add(pictureBox1);
             grpFileInfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpFileInfo.ForeColor = Color.RoyalBlue;
-            grpFileInfo.Location = new Point(825, 10);
+            grpFileInfo.Location = new Point(761, 10);
             grpFileInfo.Name = "grpFileInfo";
-            grpFileInfo.Size = new Size(489, 228);
+            grpFileInfo.Size = new Size(553, 228);
             grpFileInfo.TabIndex = 1;
             grpFileInfo.TabStop = false;
             grpFileInfo.Text = "THÔNG TIN FILE ĐƯỢC CHỌN";
@@ -1040,7 +1172,7 @@
             grpFileList.ForeColor = Color.RoyalBlue;
             grpFileList.Location = new Point(19, 10);
             grpFileList.Name = "grpFileList";
-            grpFileList.Size = new Size(787, 382);
+            grpFileList.Size = new Size(710, 382);
             grpFileList.TabIndex = 0;
             grpFileList.TabStop = false;
             grpFileList.Text = "DANH SÁCH FILE TRÊN SERVER";
@@ -1048,13 +1180,13 @@
             // 
             // lvFiles
             // 
+            lvFiles.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lvFiles.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3, columnHeader4 });
-            lvFiles.Dock = DockStyle.Fill;
             lvFiles.FullRowSelect = true;
             lvFiles.GridLines = true;
             lvFiles.Location = new Point(3, 30);
             lvFiles.Name = "lvFiles";
-            lvFiles.Size = new Size(781, 349);
+            lvFiles.Size = new Size(704, 349);
             lvFiles.TabIndex = 0;
             lvFiles.UseCompatibleStateImageBehavior = false;
             lvFiles.View = View.Details;
@@ -1141,12 +1273,6 @@
         private Label lblTitle;
         private Label lblTitle1;
         private Button btnHome;
-        private Button btnRefresh;
-        private Button btnHistory;
-        private Button btnFileList;
-        private Button btnDownload;
-        private Button btnUpload;
-        private Button btnLogout1;
         private Button btnNotify;
         private PictureBox picLogo;
         private Button btnSettings;
@@ -1209,11 +1335,27 @@
         private Label lblTransferFileName;
         private PictureBox pictureBox2;
         private DataGridView dgvHistory;
-        private Label ConnectionInfo;
         private Button btnDeleteHistory;
         private DataGridViewTextBoxColumn colHistoryFile;
         private DataGridViewTextBoxColumn colHistoryType;
         private DataGridViewTextBoxColumn colHistoryStatus;
         private DataGridViewTextBoxColumn colHistoryTime;
+        private Label lblSidebarCodePort;
+        private Label d;
+        private Label lblSidebarStatus;
+        private Label lblSidebarTime;
+        private Label lblSidebarPort;
+        private Label lblSidebarIP;
+        private Label lblSidebarName;
+        private Label lblSidebarIPSever;
+        private Label lblSidebarUser;
+        private Label lblSidebarConnect;
+        private Label lblSidebarTimeConnect;
+        private Button btnRefresh;
+        private Button btnHistory;
+        private Button btnFileList;
+        private Button btnDownload;
+        private Button btnUpload;
+        private Button btnDeleteList;
     }
 }

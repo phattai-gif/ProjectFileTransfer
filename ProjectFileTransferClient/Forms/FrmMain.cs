@@ -24,8 +24,10 @@ namespace ProjectFileTransferClient.Forms
         private ClientManager clientManager; // Khai báo clientManager
         private List<string> originalFileList = new List<string>();
         private FrmConnect frmConnect;
+        // Biến lưu tên người dùng đăng nhập
+        public string myUsername = "Hệ thống";
 
-        // 🌟 MỚI THÊM: Đường dẫn lưu file lịch sử cục bộ ngay trong thư mục chạy của ứng dụng
+        // Đường dẫn lưu file lịch sử cục bộ ngay trong thư mục chạy của ứng dụng
         private string historyFilePath = Path.Combine(Application.StartupPath, "transfer_history.txt");
 
         // Từ điển quản lý bộ nhớ tiến trình (Key là tên file)
@@ -73,9 +75,35 @@ namespace ProjectFileTransferClient.Forms
             dgvHistory.DefaultCellStyle.Font = new Font("Segoe UI", 10);
             dgvHistory.RowTemplate.Height = 35;
             dgvHistory.EnableHeadersVisualStyles = false;
+            // Lấy tên từ màn hình đăng nhập truyền sang
+            try
+            {
+                myUsername = frmConnect.txtUsername.Text;
+            }
+            catch { }
 
-            // 🌟 MỚI THÊM: Tự động nạp lại lịch sử khi vừa mở Form
+            // Tự động nạp lại lịch sử khi vừa mở Form
             LoadHistoryFromLocal();
+            // Cập nhật thông tin lên thanh Sidebar
+            lblSidebarName.Text = FrmConnect.GlobalUsername;
+            lblSidebarIP.Text = FrmConnect.GlobalIP;
+            lblSidebarPort.Text = FrmConnect.GlobalPort;
+            lblSidebarStatus.Text = "🔴 Connect ";
+            lblSidebarStatus.ForeColor = Color.LimeGreen; // Đổi màu chữ cho sinh động
+                                                          // Tạo một cái đồng hồ (Timer) 
+            System.Windows.Forms.Timer connectTimer = new System.Windows.Forms.Timer();
+            connectTimer.Interval = 1000; // Cứ 1000ms (1 giây) thì cập nhật 1 lần
+
+            //  Viết lệnh cho đồng hồ: Mỗi giây trôi qua sẽ trừ thời gian hiện tại cho lúc bắt đầu
+            connectTimer.Tick += (s, ev) =>
+            {
+                TimeSpan uptime = DateTime.Now - FrmConnect.GlobalConnectTime;
+                // Hiển thị ra Label trên Sidebar theo định dạng Giờ:Phút:Giây
+                lblSidebarTime.Text = uptime.ToString(@"hh\:mm\:ss");
+            };
+
+            //Cho đồng hồ bắt đầu chạy
+            connectTimer.Start();
         }
 
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
@@ -145,7 +173,8 @@ namespace ProjectFileTransferClient.Forms
 
                     if (this.IsHandleCreated)
                     {
-                        this.Invoke(new Action(() => {
+                        this.Invoke(new Action(() =>
+                        {
                             txtSearch.AutoCompleteCustomSource = autoCompleteList;
                         }));
                     }
@@ -297,7 +326,7 @@ namespace ProjectFileTransferClient.Forms
                         FileInfo fileInfo = new FileInfo(localFilePath);
                         long fileSize = fileInfo.Length;
 
-                        string cmd = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}{Protocol.DELIMITER}{clientHash}";
+                        string cmd = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}{Protocol.DELIMITER}{clientHash}{Protocol.DELIMITER}{FrmConnect.GlobalUsername}";
                         clientManager.SendMessage(cmd);
 
                         string? response = clientManager.ReceiveMessage();
@@ -326,6 +355,7 @@ namespace ProjectFileTransferClient.Forms
                                 double totalMB = totalBytes / 1024.0 / 1024.0;
                                 double remainingMB = totalMB - sentMB;
 
+                                // TÍNH TOÁN THỜI GIAN VÀ TỐC ĐỘ
                                 double elapsedSeconds = (DateTime.Now - startTime).TotalSeconds;
                                 string speedStr = "0,00 MB/s";
                                 string remainTimeStr = "00:00:00";
@@ -355,6 +385,7 @@ namespace ProjectFileTransferClient.Forms
                                     progressTransfer.Value = state.Percent;
                                     lblPercent.Text = $"{state.Percent}%";
 
+                                    // CẬP NHẬT LÊN GIAO DIỆN
                                     lblTransferred.Text = state.TransferredText;
                                     lblRemaining.Text = state.RemainingText;
                                     lblSpeed.Text = state.SpeedText;
@@ -367,11 +398,13 @@ namespace ProjectFileTransferClient.Forms
                             var finalState = fileProgresses[fileName];
                             finalState.StateText = "Hoàn thành";
                             finalState.Percent = 100;
+                            finalState.RemainTimeText = "00:00:00";
 
                             this.Invoke(new Action(() =>
                             {
                                 lblTransferFileName.Text = $"{fileName} (Hoàn thành)";
                                 lblState.Text = "Hoàn thành";
+                                lblRemainTime.Text = "00:00:00"; // Đưa thời gian còn lại về 00:00:00 khi xong
                                 progressTransfer.Value = 100;
 
                                 uploadCount++;
@@ -381,7 +414,7 @@ namespace ProjectFileTransferClient.Forms
                                 string currentTime = DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy");
 
                                 dgvHistory.Rows.Add(fileName, fileExt, "Upload Thành công", currentTime);
-                                SaveHistoryToLocal(); // 🌟 MỚI THÊM: Lưu lịch sử upload thành công
+                                SaveHistoryToLocal(); // Lưu lịch sử upload thành công
 
                                 MessageBox.Show($"Upload file thành công!\nMã SHA256: {clientHash}\nTrạng thái: Toàn vẹn dữ liệu (FE File hợp lệ)", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 LoadFileList();
@@ -393,7 +426,7 @@ namespace ProjectFileTransferClient.Forms
                             {
                                 string fileExt = Path.GetExtension(fileName);
                                 dgvHistory.Rows.Add(fileName, fileExt, "Upload Thất bại (FE File lỗi)", DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy"));
-                                SaveHistoryToLocal(); // 🌟 MỚI THÊM: Lưu lịch sử upload thất bại
+                                SaveHistoryToLocal(); // Lưu lịch sử upload thất bại
 
                                 MessageBox.Show("Server từ chối yêu cầu upload file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }));
@@ -656,7 +689,7 @@ namespace ProjectFileTransferClient.Forms
         private void pictureBox1_Click(object sender, EventArgs e) { }
 
         // ===========================================================//
-        // 🌟 CÁC HÀM XỬ LÝ LƯU VÀ XÓA LỊCH SỬ CỤC BỘ                  //
+        // CÁC HÀM XỬ LÝ LƯU VÀ XÓA LỊCH SỬ CỤC BỘ                  //
         // ===========================================================//
         private void SaveHistoryToLocal()
         {
@@ -698,7 +731,74 @@ namespace ProjectFileTransferClient.Forms
             catch { }
         }
 
-        // Sự kiện cho nút Bấm "Xóa lịch sử"
+
+
+        private void pnlOnline_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label2_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnDeleteList_Click(object sender, EventArgs e)
+        {
+            if (lvFiles.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn một file từ danh sách để xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string fileName = lvFiles.SelectedItems[0].Text;
+
+            DialogResult dialogResult = MessageBox.Show($"Bạn có chắc chắn muốn xóa file '{fileName}' khỏi Server không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (dialogResult == DialogResult.Yes)
+            {
+                try
+                {
+                    // 1. Gửi lệnh xóa kèm TÊN NGƯỜI DÙNG lên Server
+                    string cmd = $"DELETE{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{FrmConnect.GlobalUsername}";
+                    clientManager.SendMessage(cmd);
+
+                    // 2. Nhận kết quả từ Server
+                    string response = clientManager.ReceiveMessage();
+
+                    if (!string.IsNullOrEmpty(response))
+                    {
+                        if (response.Contains("DELETE_SUCCESS"))
+                        {
+                            // Xóa thành công
+                            lvFiles.SelectedItems[0].Remove();
+                            for (int i = allFiles.Count - 1; i >= 0; i--)
+                            {
+                                if (allFiles[i].Text == fileName) { allFiles.RemoveAt(i); break; }
+                            }
+                            lblTotalFiles.Text = lvFiles.Items.Count.ToString();
+                            ClearFileDetails();
+                            MessageBox.Show("Đã xóa file thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else if (response.Contains("DENIED"))
+                        {
+                            // Bị Server từ chối vì không phải chủ sở hữu
+                            MessageBox.Show($"Bạn không có quyền xóa file này!\nChỉ người đã Upload ({fileName}) mới được phép xóa.", "Từ chối quyền", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else
+                        {
+                            // Lỗi khác (file không tồn tại, v.v...)
+                            MessageBox.Show("Xóa file thất bại! File có thể đã bị xóa hoặc không tồn tại trên Server.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi kết nối khi gửi lệnh xóa: {ex.Message}", "Lỗi mạng", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
         private void btnDeleteHistory_Click(object sender, EventArgs e)
         {
             if (dgvHistory.SelectedRows.Count > 0)
@@ -713,6 +813,7 @@ namespace ProjectFileTransferClient.Forms
                             dgvHistory.Rows.Remove(row);
                         }
                     }
+
                     SaveHistoryToLocal();
                     MessageBox.Show("Đã xóa các dòng lịch sử được chọn thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -729,6 +830,7 @@ namespace ProjectFileTransferClient.Forms
                 if (result == DialogResult.Yes)
                 {
                     dgvHistory.Rows.Clear();
+
                     if (File.Exists(historyFilePath))
                     {
                         File.Delete(historyFilePath);
@@ -737,18 +839,17 @@ namespace ProjectFileTransferClient.Forms
                 }
             }
         }
-    }
-
-    // 🌟 Lớp lưu trạng thái (Được đưa ra ngoài class FrmMain để tránh lỗi UI Designer)
-    public class TransferProgressState
-    {
-        public string FileName { get; set; } = string.Empty;
-        public int Percent { get; set; } = 0;
-        public string TransferredText { get; set; } = "Đã truyền: 0,00 MB / 0,00 MB";
-        public string RemainingText { get; set; } = "Còn lại: 0,00 MB";
-        public string SpeedText { get; set; } = "0,00 MB/s";
-        public string ElapsedText { get; set; } = "00:00:00";
-        public string RemainTimeText { get; set; } = "00:00:00";
-        public string StateText { get; set; } = "Sẵn sàng";
+        // Lớp lưu trạng thái (Được đưa ra ngoài class FrmMain để tránh lỗi UI Designer)
+        public class TransferProgressState
+        {
+            public string FileName { get; set; } = string.Empty;
+            public int Percent { get; set; } = 0;
+            public string TransferredText { get; set; } = "Đã truyền: 0,00 MB / 0,00 MB";
+            public string RemainingText { get; set; } = "Còn lại: 0,00 MB";
+            public string SpeedText { get; set; } = "0,00 MB/s";
+            public string ElapsedText { get; set; } = "00:00:00";
+            public string RemainTimeText { get; set; } = "00:00:00";
+            public string StateText { get; set; } = "Sẵn sàng";
+        }
     }
 }

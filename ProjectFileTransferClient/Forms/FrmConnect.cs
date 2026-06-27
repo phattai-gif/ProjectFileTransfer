@@ -6,6 +6,10 @@ namespace ProjectFileTransferClient
     public partial class FrmConnect : Form
     {
         private ClientManager clientManager;
+        public static string GlobalUsername = "Hệ thống";
+        public static string GlobalIP = "127.0.0.1"; 
+        public static string GlobalPort = "8888";
+        public static DateTime GlobalConnectTime;
         public FrmConnect()
         {
             InitializeComponent();  
@@ -64,6 +68,12 @@ namespace ProjectFileTransferClient
         //Tao hàm connect
         private void btnConnect_Click(object? sender, EventArgs e)
         {
+            // --- KHÚC CODE ĐỂ LƯU THÔNG TIN ---
+            GlobalUsername = txtUsername.Text;
+            GlobalIP = txtIP.Text.Trim();
+            GlobalPort = txtPort.Text.Trim();
+            GlobalConnectTime = DateTime.Now; // ghi nhận thời gian kết nối
+            // ------------------------------------------
             string ip = txtIP.Text.Trim();
 
             if (!int.TryParse(txtPort.Text.Trim(), out int port))

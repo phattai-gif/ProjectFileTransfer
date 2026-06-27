@@ -34,7 +34,6 @@
             grpConnection = new GroupBox();
             lblStatus1 = new Label();
             lblStatus = new Label();
-            btnDisconnect = new Button();
             btnConnect = new Button();
             txtUsername = new TextBox();
             lblUsername = new Label();
@@ -42,6 +41,7 @@
             lblPort = new Label();
             txtIP = new TextBox();
             lblIP = new Label();
+            btnDisconnect = new Button();
             grpConnection.SuspendLayout();
             SuspendLayout();
             // 
@@ -120,20 +120,6 @@
             lblStatus.Text = "🔴 Disconnected";
             lblStatus.Click += lblStatus_Click;
             // 
-            // btnDisconnect
-            // 
-            btnDisconnect.BackColor = Color.LightCoral;
-            btnDisconnect.Enabled = false;
-            btnDisconnect.FlatStyle = FlatStyle.Flat;
-            btnDisconnect.ForeColor = SystemColors.ControlLightLight;
-            btnDisconnect.Location = new Point(501, 370);
-            btnDisconnect.Name = "btnDisconnect";
-            btnDisconnect.Size = new Size(216, 48);
-            btnDisconnect.TabIndex = 7;
-            btnDisconnect.Text = "NGẮT KẾT NỐI";
-            btnDisconnect.UseVisualStyleBackColor = false;
-            btnDisconnect.Click += btnDisconnect_Click;
-            // 
             // btnConnect
             // 
             btnConnect.BackColor = Color.LightGreen;
@@ -211,6 +197,20 @@
             lblIP.Text = "🌐Địa chỉ IP Server:";
             lblIP.Click += lblIP_Click;
             // 
+            // btnDisconnect
+            // 
+            btnDisconnect.BackColor = Color.LightCoral;
+            btnDisconnect.Enabled = false;
+            btnDisconnect.FlatStyle = FlatStyle.Flat;
+            btnDisconnect.ForeColor = SystemColors.ControlLightLight;
+            btnDisconnect.Location = new Point(501, 370);
+            btnDisconnect.Name = "btnDisconnect";
+            btnDisconnect.Size = new Size(216, 48);
+            btnDisconnect.TabIndex = 7;
+            btnDisconnect.Text = "NGẮT KẾT NỐI";
+            btnDisconnect.UseVisualStyleBackColor = false;
+            btnDisconnect.Click += btnDisconnect_Click;
+            // 
             // FrmConnect
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -243,10 +243,10 @@
         private TextBox txtPort;
         private Label lblPort;
         private Button btnConnect;
-        private TextBox txtUsername;
         private Label lblUsername;
-        private Button btnDisconnect;
         private Label lblStatus;
         private Label lblStatus1;
+        public TextBox txtUsername;
+        private Button btnDisconnect;
     }
 }
