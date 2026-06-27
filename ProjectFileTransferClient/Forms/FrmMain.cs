@@ -19,8 +19,17 @@ namespace ProjectFileTransferClient.Forms
         private int uploadCount = 0;
         private int downloadCount = 0;
         private int onlineUsersCount = 1; // Mặc định hiển thị bạn đang online
-
         private List<ListViewItem> allFiles = new List<ListViewItem>(); // Lưu toàn bộ danh sách file gốc.
+
+        private ClientManager clientManager; // Khai báo clientManager
+        private List<string> originalFileList = new List<string>();
+        private FrmConnect frmConnect;
+
+        // 🌟 MỚI THÊM: Đường dẫn lưu file lịch sử cục bộ ngay trong thư mục chạy của ứng dụng
+        private string historyFilePath = Path.Combine(Application.StartupPath, "transfer_history.txt");
+
+        // Từ điển quản lý bộ nhớ tiến trình (Key là tên file)
+        private Dictionary<string, TransferProgressState> fileProgresses = new Dictionary<string, TransferProgressState>();
 
         public FrmMain(ClientManager manager, FrmConnect connectForm)
         {
@@ -52,6 +61,10 @@ namespace ProjectFileTransferClient.Forms
             // Reset trống thông tin khi vừa mở form
             ClearFileDetails();
 
+            // TÍNH NĂNG GỢI Ý (AUTO-SUGGEST) CHO THANH TÌM KIẾM
+            txtSearch.AutoCompleteMode = AutoCompleteMode.Suggest; // Sẽ xổ ra danh sách các file khớp chữ cái bạn gõ
+            txtSearch.AutoCompleteSource = AutoCompleteSource.CustomSource;
+
             LoadFileList();
 
             if (dgvHistory.ColumnHeadersDefaultCellStyle != null)
@@ -60,62 +73,39 @@ namespace ProjectFileTransferClient.Forms
             dgvHistory.DefaultCellStyle.Font = new Font("Segoe UI", 10);
             dgvHistory.RowTemplate.Height = 35;
             dgvHistory.EnableHeadersVisualStyles = false;
+
+            // 🌟 MỚI THÊM: Tự động nạp lại lịch sử khi vừa mở Form
+            LoadHistoryFromLocal();
         }
-
-        private ClientManager clientManager; // Khai báo clientManager
-        private List<string> originalFileList = new List<string>();
-        private FrmConnect frmConnect;
-
-        // Lớp lưu trữ trạng thái tiến trình của từng file riêng biệt
-        public class TransferProgressState
-        {
-            public string FileName { get; set; } = string.Empty;
-            public int Percent { get; set; } = 0;
-            public string TransferredText { get; set; } = "Đã truyền: 0,00 MB / 0,00 MB";
-            public string RemainingText { get; set; } = "Còn lại: 0,00 MB";
-            public string SpeedText { get; set; } = "0,00 MB/s";
-            public string ElapsedText { get; set; } = "00:00:00";
-            public string RemainTimeText { get; set; } = "00:00:00";
-            public string StateText { get; set; } = "Sẵn sàng";
-        }
-
-        // Từ điển quản lý bộ nhớ tiến trình (Key là tên file)
-        private Dictionary<string, TransferProgressState> fileProgresses = new Dictionary<string, TransferProgressState>();
 
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
         {
             Application.Exit();
         }
 
-        // HÀM LOADFILELIST  //
+        // HÀM LOADFILELIST //
         private void LoadFileList()
         {
             try
             {
-                // Giải quyết vấn đề: Khi danh sách tải lại (hoặc sau khi xóa file), xóa sạch dữ liệu cũ hiển thị ở khung thông tin
                 if (this.IsHandleCreated)
                 {
                     this.Invoke(new Action(() => ClearFileDetails()));
                 }
 
-                // Gửi lệnh LIST sang Server để yêu cầu danh sách file
                 clientManager.SendMessage(Protocol.LIST);
-
-                // Nhận chuỗi phản hồi từ Server
                 string? response = clientManager.ReceiveMessage();
                 if (string.IsNullOrEmpty(response)) return;
 
-                // Tách dữ liệu dựa theo ký tự phân cách
                 string[] parts = response.Split(Protocol.DELIMITER);
 
-                // Kiểm tra Server trả về thành công
                 if (parts.Length > 0 && parts[0] == Protocol.LIST_SUCCESS)
                 {
-                    // Xóa danh sách cũ trên ListView
                     lvFiles.Items.Clear();
                     allFiles.Clear();
 
-                    // Bắt đầu đọc từng file từ Server
+                    AutoCompleteStringCollection autoCompleteList = new AutoCompleteStringCollection();
+
                     for (int i = 1; i < parts.Length; i++)
                     {
                         if (string.IsNullOrEmpty(parts[i])) continue;
@@ -124,7 +114,6 @@ namespace ProjectFileTransferClient.Forms
                         string fileName = fileInfo[0];
                         string fileSize = "0 KB";
 
-                        // Khởi tạo các biến chứa thông tin mở rộng ngầm định phòng khi Server chưa gửi kèm
                         string uploader = "Hệ thống";
                         string uploadDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
                         string serverPath = $"/server/storage/uploads/{fileName}";
@@ -132,23 +121,11 @@ namespace ProjectFileTransferClient.Forms
                         if (fileInfo.Length > 1)
                         {
                             long size = long.Parse(fileInfo[1]);
-
-                            if (size < 1024)
-                            {
-                                fileSize = size + " B";
-                            }
-                            else if (size < 1024 * 1024)
-                            {
-                                fileSize = (size / 1024.0).ToString("F2") + " KB";
-                            }
-                            else
-                            {
-                                fileSize = (size / 1024.0 / 1024.0).ToString("F2") + " MB";
-                            }
+                            if (size < 1024) fileSize = size + " B";
+                            else if (size < 1024 * 1024) fileSize = (size / 1024.0).ToString("F2") + " KB";
+                            else fileSize = (size / 1024.0 / 1024.0).ToString("F2") + " MB";
                         }
 
-                        // Gợi ý kỹ thuật mở rộng cấu trúc giao thức:
-                        // Nếu sau này Server trả về dạng: FileName#Size#Uploader#UploadDate#ServerPath
                         if (fileInfo.Length > 2) uploader = fileInfo[2];
                         if (fileInfo.Length > 3) uploadDate = fileInfo[3];
                         if (fileInfo.Length > 4) serverPath = fileInfo[4];
@@ -158,17 +135,26 @@ namespace ProjectFileTransferClient.Forms
                         item.SubItems.Add(Path.GetExtension(fileName));
                         item.SubItems.Add(uploadDate);
 
-                        // LƯU Ý QUAN TRỌNG: Đóng gói toàn bộ thông tin mở rộng vào thuộc tính Tag của item để dùng khi click chọn
                         item.Tag = new string[] { uploader, uploadDate, serverPath };
 
                         lvFiles.Items.Add(item);
                         allFiles.Add((ListViewItem)item.Clone());
+
+                        autoCompleteList.Add(fileName);
                     }
 
-                    // 1. Ô màu xanh dương: Hiển thị tổng số file thực tế nhận về từ Server
-                    lblTotalFiles.Text = lvFiles.Items.Count.ToString();
+                    if (this.IsHandleCreated)
+                    {
+                        this.Invoke(new Action(() => {
+                            txtSearch.AutoCompleteCustomSource = autoCompleteList;
+                        }));
+                    }
+                    else
+                    {
+                        txtSearch.AutoCompleteCustomSource = autoCompleteList;
+                    }
 
-                    // 2. Cập nhật lại giá trị thực tế cho các ô thống kê khác để tránh bị gán đè số ảo
+                    lblTotalFiles.Text = lvFiles.Items.Count.ToString();
                     lblUploadCount.Text = uploadCount.ToString();
                     lblDownloadCount.Text = downloadCount.ToString();
                     lblOnlineCount.Text = onlineUsersCount.ToString();
@@ -189,12 +175,8 @@ namespace ProjectFileTransferClient.Forms
         private void groupBox1_Enter(object sender, EventArgs e) { }
         private void grpFileList_Enter(object sender, EventArgs e) { }
 
-        // ===========================================================//
-        // SỰ KIỆN CLICK CHỌN FILE TRÊN LISTVIEW                      //
-        // ===========================================================//
         private void lvFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Giải quyết vấn đề: Khi không chọn file nào (Xóa file, click ra ngoài), dọn dẹp trống thông tin
             if (lvFiles.SelectedItems.Count == 0)
             {
                 ClearFileDetails();
@@ -206,7 +188,6 @@ namespace ProjectFileTransferClient.Forms
             string fileSize = item.SubItems[1].Text;
             string fileExt = item.SubItems[2].Text;
 
-            // Lấy thông tin mở rộng được đóng gói trong Tag ra ngoài
             string uploader = "Hệ thống";
             string uploadDate = item.SubItems.Count > 3 ? item.SubItems[3].Text : DateTime.Now.ToString("dd/MM/yyyy");
             string serverPath = $"/server/storage/uploads/{fileName}";
@@ -218,47 +199,14 @@ namespace ProjectFileTransferClient.Forms
                 serverPath = extraData[2];
             }
 
-            // Gán thông tin hiển thị cơ bản
             lblFileName.Text = $"Tên file :   {fileName}";
             lblFileSize.Text = $"Kích thước :   {fileSize}";
             lblFileType.Text = $"Loại file :   {fileExt}";
-
-            // Giải quyết vấn đề: Hiển thị bổ sung Người upload, Ngày upload, và Đường dẫn path dữ liệu
             lblUploadTime.Text = $"Người upload :   {uploader}";
             lblUploadDate.Text = $"Ngày upload :   {uploadDate}";
             lblPath.Text = $"Đường dẫn :   {serverPath}";
         }
 
-        //    // Giải quyết vấn đề: Đọc và hiển thị Icon động tương ứng với đuôi file vào PictureBox
-        //    pictureBox1.Image = GetFileIcon(fileExt);
-        //    pictureBox1.SizeMode = PictureBoxSizeMode.Zoom; // Giúp căn chỉnh ảnh cân đối vào khung hiển thị
-
-        //    if (fileProgresses.ContainsKey(fileName))
-        //    {
-        //        var state = fileProgresses[fileName];
-        //        lblTransferFileName.Text = $"{state.FileName} ({state.StateText})";
-        //        progressTransfer.Value = state.Percent;
-        //        lblTransferred.Text = state.TransferredText;
-        //        lblRemaining.Text = state.RemainingText;
-        //        lblSpeed.Text = state.SpeedText;
-        //        lblElapsed.Text = state.ElapsedText;
-        //        lblRemainTime.Text = state.RemainTimeText;
-        //        lblState.Text = state.StateText;
-        //    }
-        //    else
-        //    {
-        //        lblTransferFileName.Text = fileName;
-        //        progressTransfer.Value = 0;
-        //        lblTransferred.Text = "Đã truyền: 0,00 MB / 0,00 MB";
-        //        lblRemaining.Text = "Còn lại: 0,00 MB";
-        //        lblSpeed.Text = "0,00 MB/s";
-        //        lblElapsed.Text = "00:00:00";
-        //        lblRemainTime.Text = "00:00:00";
-        //        lblState.Text = "Sẵn sàng";
-        //    }
-        //}
-
-        // Hàm bổ trợ: Dọn dẹp sạch sẽ giao diện thông tin file được chọn về trạng thái ban đầu
         private void ClearFileDetails()
         {
             lblFileName.Text = "Tên file :";
@@ -267,51 +215,8 @@ namespace ProjectFileTransferClient.Forms
             lblUploadTime.Text = "Người upload :";
             lblUploadDate.Text = "Ngày upload :";
             lblPath.Text = "Đường dẫn :";
-            pictureBox1.Image = null; // Xóa ảnh icon hiện tại
+            pictureBox1.Image = null;
         }
-
-        //// Hàm bổ trợ: Trích xuất hình ảnh icon tương ứng từ Resources của hệ thống dựa trên phần mở rộng file
-        //private Image GetFileIcon(string ext)
-        //{
-        //    if (string.IsNullOrEmpty(ext)) return null;
-        //    ext = ext.ToLower().Trim();
-
-        //    try
-        //    {
-        //        switch (ext)
-        //        {
-        //            case ".pdf":
-        //                return Properties.Resources.pdf_icon; // Tên resource ảnh bạn đã import trong ứng dụng
-        //            case ".doc":
-        //            case ".docx":
-        //                return Properties.Resources.word_icon;
-        //            case ".xls":
-        //            case ".xlsx":
-        //                return Properties.Resources.excel_icon;
-        //            case ".png":
-        //            case ".jpg":
-        //            case ".jpeg":
-        //            case ".gif":
-        //                return Properties.Resources.image_icon;
-        //            case ".mp4":
-        //            case ".avi":
-        //            case ".mkv":
-        //                return Properties.Resources.video_icon;
-        //            case ".zip":
-        //            case ".rar":
-        //                return Properties.Resources.zip_icon;
-        //            case ".txt":
-        //                return Properties.Resources.txt_icon;
-        //            default:
-        //                return Properties.Resources.default_icon; // Sử dụng icon mặc định đối với các file khác
-        //        }
-        //    }
-        //    catch
-        //    {
-        //        // Phòng trường hợp lập trình viên chưa import Resource, tránh bị văng crash ứng dụng
-        //        return null;
-        //    }
-        //}
 
         private void label2_Click(object sender, EventArgs e) { }
         private void panel2_Paint(object sender, PaintEventArgs e) { }
@@ -349,7 +254,7 @@ namespace ProjectFileTransferClient.Forms
         private void btnRefreshList_Click_1(object sender, EventArgs e) { }
 
         // ===========================================================//
-        // SỰ KIỆN UPLOAD FILE THÀNH CÔNG //
+        // UPLOAD FILE THÀNH CÔNG //
         // ===========================================================//
         private async void btnUploaddown_Click(object sender, EventArgs e)
         {
@@ -372,7 +277,6 @@ namespace ProjectFileTransferClient.Forms
                 {
                     try
                     {
-                        // [TASK SHA256] - FE File hợp lệ: Tính toán mã Hash SHA256 của file trước khi gửi
                         string clientHash = "";
                         using (var sha256 = System.Security.Cryptography.SHA256.Create())
                         {
@@ -393,7 +297,6 @@ namespace ProjectFileTransferClient.Forms
                         FileInfo fileInfo = new FileInfo(localFilePath);
                         long fileSize = fileInfo.Length;
 
-                        // [TASK SHA256] - Gửi kèm mã Hash qua Protocol để BE nhận kết quả hash
                         string cmd = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}{Protocol.DELIMITER}{clientHash}";
                         clientManager.SendMessage(cmd);
 
@@ -471,29 +374,26 @@ namespace ProjectFileTransferClient.Forms
                                 lblState.Text = "Hoàn thành";
                                 progressTransfer.Value = 100;
 
-                                // Tăng biến đếm upload và hiển thị ngay lập tức lên ô xanh lá
                                 uploadCount++;
                                 lblUploadCount.Text = uploadCount.ToString();
 
-                                // [TASK LỊCH SỬ TRUYỀN FILE] - Đổ trực tiếp kết quả vào FE DataGridView lịch sử bên góc phải dưới
                                 string fileExt = Path.GetExtension(fileName);
                                 string currentTime = DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy");
 
-                                // Thêm hàng mới vào dgvHistory theo thứ tự cột: File | Loại | Trạng thái | Thời gian
                                 dgvHistory.Rows.Add(fileName, fileExt, "Upload Thành công", currentTime);
+                                SaveHistoryToLocal(); // 🌟 MỚI THÊM: Lưu lịch sử upload thành công
 
-                                // Hiển thị thông báo kèm mã Hash SHA256 trực quan để chứng minh file hợp lệ
                                 MessageBox.Show($"Upload file thành công!\nMã SHA256: {clientHash}\nTrạng thái: Toàn vẹn dữ liệu (FE File hợp lệ)", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                LoadFileList(); // Làm mới danh sách file từ server
+                                LoadFileList();
                             }));
                         }
                         else
                         {
                             this.Invoke(new Action(() =>
                             {
-                                // Nếu thất bại, ghi nhận Log lỗi vào DataGridView
                                 string fileExt = Path.GetExtension(fileName);
                                 dgvHistory.Rows.Add(fileName, fileExt, "Upload Thất bại (FE File lỗi)", DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy"));
+                                SaveHistoryToLocal(); // 🌟 MỚI THÊM: Lưu lịch sử upload thất bại
 
                                 MessageBox.Show("Server từ chối yêu cầu upload file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }));
@@ -510,7 +410,7 @@ namespace ProjectFileTransferClient.Forms
         }
 
         // ===========================================================//
-        //  DOWNLOAD FILE THÀNH CÔNG -> TĂNG Value         //
+        // DOWNLOAD FILE THÀNH CÔNG -> TĂNG Value //
         // ===========================================================//
         private async void btnDownloadFile_Click(object sender, EventArgs e)
         {
@@ -630,13 +530,12 @@ namespace ProjectFileTransferClient.Forms
                                 progressTransfer.Value = 100;
                             }
 
-                            // Tăng biến đếm download và hiển thị chuẩn lên ô màu cam
                             downloadCount++;
                             lblDownloadCount.Text = downloadCount.ToString();
 
-                            // [TASK LỊCH SỬ TRUYỀN FILE] - Thêm dòng log tải file thành công vào dgvHistory
                             string currentTime = DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy");
                             dgvHistory.Rows.Add(fileName, fileExt, "Download Thành công", currentTime);
+                            SaveHistoryToLocal(); // 🌟 MỚI THÊM: Lưu lịch sử download thành công
 
                             MessageBox.Show($"Tải file '{fileName}' thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }));
@@ -645,8 +544,8 @@ namespace ProjectFileTransferClient.Forms
                     {
                         this.Invoke(new Action(() =>
                         {
-                            // Ghi nhận log tải thất bại
                             dgvHistory.Rows.Add(fileName, fileExt, "Download Thất bại", DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy"));
+                            SaveHistoryToLocal(); // 🌟 MỚI THÊM: Lưu lịch sử download thất bại
                             MessageBox.Show("Server từ chối yêu cầu tải file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }));
                     }
@@ -676,16 +575,25 @@ namespace ProjectFileTransferClient.Forms
             string keyword = txtSearch.Text.Trim().ToLower();
             lvFiles.Items.Clear();
 
-            foreach (ListViewItem item in allFiles)
+            if (string.IsNullOrEmpty(keyword))
             {
-                string fileName = item.Text.ToLower();
-                if (fileName.Contains(keyword))
+                foreach (ListViewItem item in allFiles)
                 {
                     lvFiles.Items.Add((ListViewItem)item.Clone());
                 }
             }
+            else
+            {
+                foreach (ListViewItem item in allFiles)
+                {
+                    string fileName = item.Text.ToLower();
+                    if (fileName.StartsWith(keyword) || fileName.Contains(keyword))
+                    {
+                        lvFiles.Items.Add((ListViewItem)item.Clone());
+                    }
+                }
+            }
 
-            // Cập nhật số lượng file co giãn động theo kết quả ô tìm kiếm
             lblTotalFiles.Text = lvFiles.Items.Count.ToString();
         }
 
@@ -693,12 +601,11 @@ namespace ProjectFileTransferClient.Forms
         private void lblElapsed_Click(object sender, EventArgs e) { }
         private void lblSpeedTitle_Click(object sender, EventArgs e) { }
         private void pnlUpload_Paint(object sender, PaintEventArgs e) { }
-
         private void lblUploadCount_Click(object sender, EventArgs e) { }
         private void lblDownloadCount_Click(object sender, EventArgs e) { }
 
         // ===========================================================//
-        // XUẤT LỊCH SỬ TRUYỀN FILE       //
+        // XUẤT LỊCH SỬ TRUYỀN FILE //
         // ===========================================================//
         private void btnExportLog_Click(object sender, EventArgs e)
         {
@@ -719,10 +626,8 @@ namespace ProjectFileTransferClient.Forms
                 {
                     using (StreamWriter sw = new StreamWriter(saveFileDialog.FileName, false, Encoding.UTF8))
                     {
-                        // Ghi tiêu đề cột
                         sw.WriteLine("Tên File\tLoại\tTrạng thái\tThời gian");
 
-                        // Ghi từng dòng dữ liệu từ dgvHistory
                         foreach (DataGridViewRow row in dgvHistory.Rows)
                         {
                             if (!row.IsNewRow)
@@ -746,15 +651,104 @@ namespace ProjectFileTransferClient.Forms
         private void lblUploadDate_Click(object sender, EventArgs e) { }
         private void lblUploadTime_Click(object sender, EventArgs e) { }
         private void lblPath_Click(object sender, EventArgs e) { }
+        private void lblTotalFiles_Click(object sender, EventArgs e) { }
+        private void lblUploadCount_Click_1(object sender, EventArgs e) { }
+        private void pictureBox1_Click(object sender, EventArgs e) { }
 
-        private void lblTotalFiles_Click(object sender, EventArgs e)
+        // ===========================================================//
+        // 🌟 CÁC HÀM XỬ LÝ LƯU VÀ XÓA LỊCH SỬ CỤC BỘ                  //
+        // ===========================================================//
+        private void SaveHistoryToLocal()
         {
-
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(historyFilePath, false, Encoding.UTF8))
+                {
+                    foreach (DataGridViewRow row in dgvHistory.Rows)
+                    {
+                        if (!row.IsNewRow && row.Cells[0].Value != null)
+                        {
+                            sw.WriteLine($"{row.Cells[0].Value}\t{row.Cells[1].Value}\t{row.Cells[2].Value}\t{row.Cells[3].Value}");
+                        }
+                    }
+                }
+            }
+            catch { }
         }
 
-        private void lblUploadCount_Click_1(object sender, EventArgs e)
+        private void LoadHistoryFromLocal()
         {
-
+            try
+            {
+                if (File.Exists(historyFilePath))
+                {
+                    dgvHistory.Rows.Clear();
+                    string[] lines = File.ReadAllLines(historyFilePath, Encoding.UTF8);
+                    foreach (string line in lines)
+                    {
+                        if (string.IsNullOrWhiteSpace(line)) continue;
+                        string[] parts = line.Split('\t');
+                        if (parts.Length == 4)
+                        {
+                            dgvHistory.Rows.Add(parts[0], parts[1], parts[2], parts[3]);
+                        }
+                    }
+                }
+            }
+            catch { }
         }
+
+        // Sự kiện cho nút Bấm "Xóa lịch sử"
+        private void btnDeleteHistory_Click(object sender, EventArgs e)
+        {
+            if (dgvHistory.SelectedRows.Count > 0)
+            {
+                DialogResult result = MessageBox.Show($"Bạn có chắc chắn muốn xóa {dgvHistory.SelectedRows.Count} dòng lịch sử được chọn không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result == DialogResult.Yes)
+                {
+                    foreach (DataGridViewRow row in dgvHistory.SelectedRows)
+                    {
+                        if (!row.IsNewRow)
+                        {
+                            dgvHistory.Rows.Remove(row);
+                        }
+                    }
+                    SaveHistoryToLocal();
+                    MessageBox.Show("Đã xóa các dòng lịch sử được chọn thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            else
+            {
+                if (dgvHistory.Rows.Count == 0 || (dgvHistory.Rows.Count == 1 && dgvHistory.Rows[0].IsNewRow))
+                {
+                    MessageBox.Show("Hiện tại danh sách lịch sử đang trống, không có gì để xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                DialogResult result = MessageBox.Show("Bạn không chọn dòng nào cụ thể. Bạn có muốn XÓA SẠCH TOÀN BỘ lịch sử truyền file không?", "Xác nhận xóa hết", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
+                {
+                    dgvHistory.Rows.Clear();
+                    if (File.Exists(historyFilePath))
+                    {
+                        File.Delete(historyFilePath);
+                    }
+                    MessageBox.Show("Đã xóa sạch toàn bộ lịch sử truyền file hệ thống!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+    }
+
+    // 🌟 Lớp lưu trạng thái (Được đưa ra ngoài class FrmMain để tránh lỗi UI Designer)
+    public class TransferProgressState
+    {
+        public string FileName { get; set; } = string.Empty;
+        public int Percent { get; set; } = 0;
+        public string TransferredText { get; set; } = "Đã truyền: 0,00 MB / 0,00 MB";
+        public string RemainingText { get; set; } = "Còn lại: 0,00 MB";
+        public string SpeedText { get; set; } = "0,00 MB/s";
+        public string ElapsedText { get; set; } = "00:00:00";
+        public string RemainTimeText { get; set; } = "00:00:00";
+        public string StateText { get; set; } = "Sẵn sàng";
     }
 }

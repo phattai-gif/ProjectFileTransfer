@@ -51,7 +51,7 @@
             btnUploaddown = new Button();
             btnLogout2 = new Button();
             pnlContent = new Panel();
-            btnDisconnect = new Button();
+            btnDeleteHistory = new Button();
             grpHistory = new GroupBox();
             dgvHistory = new DataGridView();
             colHistoryFile = new DataGridViewTextBoxColumn();
@@ -151,7 +151,7 @@
             pnlSidebar.Controls.Add(lblTitle);
             pnlSidebar.Location = new Point(0, 0);
             pnlSidebar.Name = "pnlSidebar";
-            pnlSidebar.Size = new Size(337, 852);
+            pnlSidebar.Size = new Size(364, 852);
             pnlSidebar.TabIndex = 0;
             // 
             // pnlConnection
@@ -161,7 +161,7 @@
             pnlConnection.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
             pnlConnection.Location = new Point(3, 587);
             pnlConnection.Name = "pnlConnection";
-            pnlConnection.Size = new Size(334, 262);
+            pnlConnection.Size = new Size(361, 262);
             pnlConnection.TabIndex = 0;
             // 
             // ConnectionInfo
@@ -400,7 +400,7 @@
             btnLogout2.ForeColor = SystemColors.ButtonHighlight;
             btnLogout2.Location = new Point(1398, 9);
             btnLogout2.Name = "btnLogout2";
-            btnLogout2.Size = new Size(142, 62);
+            btnLogout2.Size = new Size(169, 62);
             btnLogout2.TabIndex = 4;
             btnLogout2.Text = "Đăng xuất";
             btnLogout2.UseVisualStyleBackColor = false;
@@ -410,7 +410,7 @@
             // 
             pnlContent.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pnlContent.BackColor = Color.White;
-            pnlContent.Controls.Add(btnDisconnect);
+            pnlContent.Controls.Add(btnDeleteHistory);
             pnlContent.Controls.Add(grpHistory);
             pnlContent.Controls.Add(grpStatistics);
             pnlContent.Controls.Add(grpTransfer);
@@ -419,21 +419,24 @@
             pnlContent.ForeColor = SystemColors.Control;
             pnlContent.Location = new Point(250, 80);
             pnlContent.Name = "pnlContent";
-            pnlContent.Size = new Size(1302, 772);
+            pnlContent.Size = new Size(1329, 772);
             pnlContent.TabIndex = 2;
             // 
-            // btnDisconnect
+            // btnDeleteHistory
             // 
-            btnDisconnect.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            btnDisconnect.BackColor = Color.Red;
-            btnDisconnect.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnDisconnect.Location = new Point(93, 693);
-            btnDisconnect.Name = "btnDisconnect";
-            btnDisconnect.Size = new Size(1105, 59);
-            btnDisconnect.TabIndex = 6;
-            btnDisconnect.Text = "DISCONNECT";
-            btnDisconnect.UseVisualStyleBackColor = false;
-            btnDisconnect.Click += button3_Click;
+            btnDeleteHistory.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnDeleteHistory.BackColor = Color.Red;
+            btnDeleteHistory.Cursor = Cursors.Hand;
+            btnDeleteHistory.FlatStyle = FlatStyle.Flat;
+            btnDeleteHistory.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnDeleteHistory.ForeColor = Color.White;
+            btnDeleteHistory.Location = new Point(1185, 723);
+            btnDeleteHistory.Name = "btnDeleteHistory";
+            btnDeleteHistory.Size = new Size(129, 43);
+            btnDeleteHistory.TabIndex = 3;
+            btnDeleteHistory.Text = "Xóa lịch sử";
+            btnDeleteHistory.UseVisualStyleBackColor = false;
+            btnDeleteHistory.Click += btnDeleteHistory_Click;
             // 
             // grpHistory
             // 
@@ -441,9 +444,9 @@
             grpHistory.Controls.Add(dgvHistory);
             grpHistory.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpHistory.ForeColor = Color.RoyalBlue;
-            grpHistory.Location = new Point(798, 443);
+            grpHistory.Location = new Point(825, 458);
             grpHistory.Name = "grpHistory";
-            grpHistory.Size = new Size(478, 237);
+            grpHistory.Size = new Size(492, 262);
             grpHistory.TabIndex = 2;
             grpHistory.TabStop = false;
             grpHistory.Text = "LỊCH SỬ TRUYỀN FILE GẦN ĐÂY";
@@ -463,7 +466,7 @@
             dgvHistory.RowHeadersVisible = false;
             dgvHistory.RowHeadersWidth = 62;
             dgvHistory.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvHistory.Size = new Size(472, 207);
+            dgvHistory.Size = new Size(486, 232);
             dgvHistory.TabIndex = 0;
             dgvHistory.CellContentClick += dgvHistory_CellContentClick;
             // 
@@ -497,7 +500,7 @@
             colHistoryTime.MinimumWidth = 8;
             colHistoryTime.Name = "colHistoryTime";
             colHistoryTime.ReadOnly = true;
-            colHistoryTime.Width = 80;
+            colHistoryTime.Width = 90;
             // 
             // grpStatistics
             // 
@@ -509,7 +512,7 @@
             grpStatistics.Controls.Add(pnlTotalFile);
             grpStatistics.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpStatistics.ForeColor = Color.RoyalBlue;
-            grpStatistics.Location = new Point(798, 242);
+            grpStatistics.Location = new Point(825, 242);
             grpStatistics.Name = "grpStatistics";
             grpStatistics.Size = new Size(478, 210);
             grpStatistics.TabIndex = 2;
@@ -724,9 +727,9 @@
             grpTransfer.Controls.Add(pictureBox2);
             grpTransfer.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpTransfer.ForeColor = Color.RoyalBlue;
-            grpTransfer.Location = new Point(15, 398);
+            grpTransfer.Location = new Point(19, 417);
             grpTransfer.Name = "grpTransfer";
-            grpTransfer.Size = new Size(768, 272);
+            grpTransfer.Size = new Size(784, 349);
             grpTransfer.TabIndex = 2;
             grpTransfer.TabStop = false;
             grpTransfer.Text = "TIẾN TRÌNH TRUYỀN FILE";
@@ -737,7 +740,7 @@
             pnlRemainTime.BackColor = Color.WhiteSmoke;
             pnlRemainTime.Controls.Add(lblRemainTime);
             pnlRemainTime.Controls.Add(lblRemainTitle);
-            pnlRemainTime.Location = new Point(344, 183);
+            pnlRemainTime.Location = new Point(383, 198);
             pnlRemainTime.Name = "pnlRemainTime";
             pnlRemainTime.Size = new Size(157, 68);
             pnlRemainTime.TabIndex = 11;
@@ -755,22 +758,17 @@
             // 
             // lblRemainTitle
             // 
-            lblRemainTitle.AutoSize = true;
-            lblRemainTitle.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblRemainTitle.ForeColor = SystemColors.ActiveCaptionText;
-            lblRemainTitle.Location = new Point(18, 6);
+            lblRemainTitle.Location = new Point(0, 0);
             lblRemainTitle.Name = "lblRemainTitle";
-            lblRemainTitle.Size = new Size(124, 21);
-            lblRemainTitle.TabIndex = 0;
-            lblRemainTitle.Text = "Thời gian còn lại";
-            lblRemainTitle.Click += lblRemainTitle_Click;
+            lblRemainTitle.Size = new Size(100, 23);
+            lblRemainTitle.TabIndex = 2;
             // 
             // pnlState
             // 
             pnlState.BackColor = Color.WhiteSmoke;
             pnlState.Controls.Add(lblState);
             pnlState.Controls.Add(lblStateTitle);
-            pnlState.Location = new Point(508, 182);
+            pnlState.Location = new Point(547, 197);
             pnlState.Name = "pnlState";
             pnlState.Size = new Size(163, 68);
             pnlState.TabIndex = 10;
@@ -802,7 +800,7 @@
             pnlElapsed.BackColor = Color.WhiteSmoke;
             pnlElapsed.Controls.Add(lblElapsed);
             pnlElapsed.Controls.Add(lblElapsedTitle);
-            pnlElapsed.Location = new Point(180, 183);
+            pnlElapsed.Location = new Point(219, 198);
             pnlElapsed.Name = "pnlElapsed";
             pnlElapsed.Size = new Size(157, 68);
             pnlElapsed.TabIndex = 9;
@@ -836,7 +834,7 @@
             pnlSpeed.BackColor = Color.WhiteSmoke;
             pnlSpeed.Controls.Add(lblSpeed);
             pnlSpeed.Controls.Add(lblSpeedTitle);
-            pnlSpeed.Location = new Point(6, 184);
+            pnlSpeed.Location = new Point(45, 199);
             pnlSpeed.Name = "pnlSpeed";
             pnlSpeed.Size = new Size(167, 68);
             pnlSpeed.TabIndex = 8;
@@ -869,7 +867,7 @@
             // 
             lblRemaining.AutoSize = true;
             lblRemaining.ForeColor = SystemColors.ActiveCaptionText;
-            lblRemaining.Location = new Point(551, 118);
+            lblRemaining.Location = new Point(590, 126);
             lblRemaining.Name = "lblRemaining";
             lblRemaining.Size = new Size(124, 25);
             lblRemaining.TabIndex = 7;
@@ -879,7 +877,7 @@
             // 
             lblTransferred.AutoSize = true;
             lblTransferred.ForeColor = SystemColors.ActiveCaptionText;
-            lblTransferred.Location = new Point(129, 117);
+            lblTransferred.Location = new Point(168, 125);
             lblTransferred.Name = "lblTransferred";
             lblTransferred.Size = new Size(212, 25);
             lblTransferred.TabIndex = 6;
@@ -891,7 +889,7 @@
             lblPercent.AutoSize = true;
             lblPercent.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblPercent.ForeColor = SystemColors.ActiveCaptionText;
-            lblPercent.Location = new Point(626, 77);
+            lblPercent.Location = new Point(665, 85);
             lblPercent.Name = "lblPercent";
             lblPercent.Size = new Size(41, 28);
             lblPercent.TabIndex = 5;
@@ -899,7 +897,7 @@
             // 
             // progressTransfer
             // 
-            progressTransfer.Location = new Point(132, 80);
+            progressTransfer.Location = new Point(171, 88);
             progressTransfer.Name = "progressTransfer";
             progressTransfer.Size = new Size(488, 25);
             progressTransfer.TabIndex = 4;
@@ -920,7 +918,7 @@
             lblTransferFileName.AutoSize = true;
             lblTransferFileName.Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTransferFileName.ForeColor = SystemColors.ActiveCaptionText;
-            lblTransferFileName.Location = new Point(129, 42);
+            lblTransferFileName.Location = new Point(168, 50);
             lblTransferFileName.Name = "lblTransferFileName";
             lblTransferFileName.Size = new Size(222, 30);
             lblTransferFileName.TabIndex = 2;
@@ -929,7 +927,7 @@
             // pictureBox2
             // 
             pictureBox2.Image = (Image)resources.GetObject("pictureBox2.Image");
-            pictureBox2.Location = new Point(20, 42);
+            pictureBox2.Location = new Point(59, 50);
             pictureBox2.Name = "pictureBox2";
             pictureBox2.Size = new Size(97, 112);
             pictureBox2.SizeMode = PictureBoxSizeMode.AutoSize;
@@ -948,9 +946,9 @@
             grpFileInfo.Controls.Add(pictureBox1);
             grpFileInfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpFileInfo.ForeColor = Color.RoyalBlue;
-            grpFileInfo.Location = new Point(798, 10);
+            grpFileInfo.Location = new Point(825, 10);
             grpFileInfo.Name = "grpFileInfo";
-            grpFileInfo.Size = new Size(478, 228);
+            grpFileInfo.Size = new Size(489, 228);
             grpFileInfo.TabIndex = 1;
             grpFileInfo.TabStop = false;
             grpFileInfo.Text = "THÔNG TIN FILE ĐƯỢC CHỌN";
@@ -961,7 +959,7 @@
             lblPath.AutoSize = true;
             lblPath.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblPath.ForeColor = Color.FromArgb(0, 0, 64);
-            lblPath.Location = new Point(181, 205);
+            lblPath.Location = new Point(160, 195);
             lblPath.Name = "lblPath";
             lblPath.Size = new Size(114, 20);
             lblPath.TabIndex = 5;
@@ -972,7 +970,7 @@
             lblUploadTime.AutoSize = true;
             lblUploadTime.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblUploadTime.ForeColor = Color.FromArgb(0, 0, 64);
-            lblUploadTime.Location = new Point(181, 172);
+            lblUploadTime.Location = new Point(160, 162);
             lblUploadTime.Name = "lblUploadTime";
             lblUploadTime.Size = new Size(126, 20);
             lblUploadTime.TabIndex = 4;
@@ -983,7 +981,7 @@
             lblFileType.AutoSize = true;
             lblFileType.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblFileType.ForeColor = Color.FromArgb(0, 0, 64);
-            lblFileType.Location = new Point(181, 107);
+            lblFileType.Location = new Point(160, 97);
             lblFileType.Name = "lblFileType";
             lblFileType.Size = new Size(93, 20);
             lblFileType.TabIndex = 3;
@@ -994,7 +992,7 @@
             lblFileSize.AutoSize = true;
             lblFileSize.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblFileSize.ForeColor = Color.FromArgb(0, 0, 64);
-            lblFileSize.Location = new Point(181, 79);
+            lblFileSize.Location = new Point(160, 69);
             lblFileSize.Name = "lblFileSize";
             lblFileSize.Size = new Size(123, 20);
             lblFileSize.TabIndex = 2;
@@ -1005,7 +1003,7 @@
             lblUploadDate.AutoSize = true;
             lblUploadDate.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblUploadDate.ForeColor = Color.FromArgb(0, 0, 64);
-            lblUploadDate.Location = new Point(181, 139);
+            lblUploadDate.Location = new Point(160, 129);
             lblUploadDate.Name = "lblUploadDate";
             lblUploadDate.Size = new Size(131, 20);
             lblUploadDate.TabIndex = 2;
@@ -1016,7 +1014,7 @@
             lblFileName.AutoSize = true;
             lblFileName.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblFileName.ForeColor = Color.FromArgb(0, 0, 64);
-            lblFileName.Location = new Point(181, 49);
+            lblFileName.Location = new Point(160, 39);
             lblFileName.Name = "lblFileName";
             lblFileName.Size = new Size(89, 20);
             lblFileName.TabIndex = 1;
@@ -1031,6 +1029,7 @@
             pictureBox1.Size = new Size(93, 134);
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
             // 
             // grpFileList
             // 
@@ -1041,7 +1040,7 @@
             grpFileList.ForeColor = Color.RoyalBlue;
             grpFileList.Location = new Point(19, 10);
             grpFileList.Name = "grpFileList";
-            grpFileList.Size = new Size(760, 382);
+            grpFileList.Size = new Size(787, 382);
             grpFileList.TabIndex = 0;
             grpFileList.TabStop = false;
             grpFileList.Text = "DANH SÁCH FILE TRÊN SERVER";
@@ -1055,7 +1054,7 @@
             lvFiles.GridLines = true;
             lvFiles.Location = new Point(3, 30);
             lvFiles.Name = "lvFiles";
-            lvFiles.Size = new Size(754, 349);
+            lvFiles.Size = new Size(781, 349);
             lvFiles.TabIndex = 0;
             lvFiles.UseCompatibleStateImageBehavior = false;
             lvFiles.View = View.Details;
@@ -1086,7 +1085,7 @@
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.WhiteSmoke;
-            ClientSize = new Size(1552, 852);
+            ClientSize = new Size(1579, 852);
             Controls.Add(btnLogout2);
             Controls.Add(pnlContent);
             Controls.Add(pnlTopBar);
@@ -1171,7 +1170,6 @@
         private Label lblPath;
         private Label lblUploadTime;
         private Button btnUploaddown;
-        private Button btnDisconnect;
         private Button btnRefreshList;
         private Button btnDownloadFile;
         private Panel pnlTotalFile;
@@ -1211,10 +1209,11 @@
         private Label lblTransferFileName;
         private PictureBox pictureBox2;
         private DataGridView dgvHistory;
+        private Label ConnectionInfo;
+        private Button btnDeleteHistory;
         private DataGridViewTextBoxColumn colHistoryFile;
         private DataGridViewTextBoxColumn colHistoryType;
         private DataGridViewTextBoxColumn colHistoryStatus;
         private DataGridViewTextBoxColumn colHistoryTime;
-        private Label ConnectionInfo;
     }
 }
