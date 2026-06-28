@@ -356,7 +356,7 @@ namespace ProjectFileTransferServer.Network
 
             try
             {
-                // 1. Lấy danh sách file hiện có từ fileManager (Chỉ khai báo 1 lần duy nhất)
+                // 1. Lấy danh sách file hiện có từ fileManager
                 string[] files = fileManager.GetFileListWithSize();
                 StringBuilder response = new StringBuilder(Protocol.LIST_SUCCESS);
 
@@ -365,25 +365,55 @@ namespace ProjectFileTransferServer.Network
                 {
                     if (string.IsNullOrEmpty(file)) continue;
 
-                    // Tách tên file và size ban đầu (Giả sử FileManager trả về dạng "TenFile.ext#Size")
+                    // Tách các thành phần của file
                     string[] fileInfo = file.Split('#');
                     string fName = fileInfo[0];
-                    string fSize = fileInfo.Length > 1 ? fileInfo[1] : "0";
 
-                    // 3. Đọc thông tin người upload và ngày giờ thực tế từ file Metadata
+                    string fSize = "0";
+                    if (fileInfo.Length > 1)
+                    {
+                        fSize = fileInfo[1];
+                    }
+
+                    // 3. Đọc thông tin người upload thực tế từ file Metadata
                     var meta = GetMetadata(fName);
-                    string uploader = string.IsNullOrEmpty(meta.Uploader) ? "Hệ thống" : meta.Uploader;
-                    string date = string.IsNullOrEmpty(meta.UploadDate) ? DateTime.Now.ToString("dd/MM/yyyy HH:mm") : meta.UploadDate;
+
+                    string uploader = "Hệ thống";
+                    if (!string.IsNullOrEmpty(meta.Uploader))
+                    {
+                        uploader = meta.Uploader;
+                    }
+                    else if (fileInfo.Length > 2 && !string.IsNullOrEmpty(fileInfo[2]))
+                    {
+                        uploader = fileInfo[2];
+                    }
+
+                    // 4. XỬ LÝ NGÀY THÁNG DỨT ĐIỂM: Ép cứng mốc cố định cho file cũ không có thông tin
+                    string date = "";
+                    if (!string.IsNullOrEmpty(meta.UploadDate))
+                    {
+                        date = meta.UploadDate;
+                    }
+                    else if (fileInfo.Length > 3 && !string.IsNullOrEmpty(fileInfo[3]))
+                    {
+                        date = fileInfo[3];
+                    }
+                    else
+                    {
+                        // Nếu không tìm thấy metadata của file cũ, giữ nguyên mốc thời gian cố định này khi refresh
+                        date = "28/06/2026 00:00";
+                    }
+
                     string path = $"/server/storage/uploads/{fName}";
 
-                    // 4. Ghép chuỗi theo đúng cấu trúc Client đang chờ: FileName#Size#Username#UploadDate#ServerPath
+                    // 5. Ghép chuỗi theo đúng cấu trúc Client đang chờ
                     string fileData = $"{fName}#{fSize}#{uploader}#{date}#{path}";
                     response.Append(Protocol.DELIMITER).Append(fileData);
                 }
 
-                // 5. Gửi toàn bộ chuỗi phản hồi về cho Client qua Stream/Socket
+                // 6. Gửi toàn bộ chuỗi phản hồi về cho Client qua Stream/Socket
                 writer.WriteLine(response.ToString());
-                writer.Flush(); // Đảm bảo dữ liệu được đẩy đi ngay lập tức
+                writer.Flush();
 
                 logCallback?.Invoke($"[LIST] Thành công: Đã gửi danh sách gồm {files.Length} file cho Client.");
             }

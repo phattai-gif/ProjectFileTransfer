@@ -430,8 +430,11 @@ namespace ProjectFileTransferClient.Forms
                                 SaveHistoryToLocal(); // Lưu lịch sử upload thành công
 
                                 MessageBox.Show($"Upload file thành công!\nMã SHA256: {clientHash}\nTrạng thái: Toàn vẹn dữ liệu (FE File hợp lệ)", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                LoadFileList();
                             }));
+
+                            IsNetworkBusy = false;
+                            Thread.Sleep(300);
+                            LoadFileList();
                         }
                         else
                         {
@@ -443,16 +446,17 @@ namespace ProjectFileTransferClient.Forms
 
                                 MessageBox.Show("Server từ chối yêu cầu upload file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }));
+                            IsNetworkBusy = false;
                         }
                     }
                     catch (Exception ex)
                     {
                         this.Invoke(new Action(() => MessageBox.Show($"Lỗi truyền dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)));
+                        IsNetworkBusy = false;
                     }
                 });
 
                 btnUploaddown.Enabled = true;
-                IsNetworkBusy = false; // ĐẾM ONLINE TẠM THỜI MỞ LẠI KHI XONG VIEC
             }
         }
 
@@ -465,6 +469,7 @@ namespace ProjectFileTransferClient.Forms
             if (lvFiles.SelectedItems.Count == 0)
             {
                 MessageBox.Show("Vui lòng chọn một file từ danh sách để tải.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                IsNetworkBusy = false; // Mở lại nếu không chọn file
                 return;
             }
 
@@ -476,7 +481,11 @@ namespace ProjectFileTransferClient.Forms
             saveFileDialog.Title = "Chọn thư mục và vị trí lưu file tải về";
             saveFileDialog.Filter = $"{fileExt.ToUpper()} Files (*{fileExt})|*{fileExt}|All files (*.*)|*.*";
 
-            if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
+            if (saveFileDialog.ShowDialog() != DialogResult.OK)
+            {
+                IsNetworkBusy = false; // Mở lại nếu hủy bỏ Form chọn vị trí lưu
+                return;
+            }
 
             string savePath = saveFileDialog.FileName;
             btnDownloadFile.Enabled = false;
@@ -583,29 +592,35 @@ namespace ProjectFileTransferClient.Forms
 
                             string currentTime = DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy");
                             dgvHistory.Rows.Add(fileName, fileExt, "Download Thành công", currentTime);
-                            SaveHistoryToLocal(); //  Lưu lịch sử download thành công
+                            SaveHistoryToLocal();
 
                             MessageBox.Show($"Tải file '{fileName}' thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }));
+
+                        // ĐƯA LOGIC CẬP NHẬT DANH SÁCH RA NGOÀI KHỐI INVOKE
+                        IsNetworkBusy = false;
+                        Thread.Sleep(300);
+                        LoadFileList();
                     }
                     else
                     {
                         this.Invoke(new Action(() =>
                         {
                             dgvHistory.Rows.Add(fileName, fileExt, "Download Thất bại", DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy"));
-                            SaveHistoryToLocal(); //  Lưu lịch sử download thất bại
+                            SaveHistoryToLocal();
                             MessageBox.Show("Server từ chối yêu cầu tải file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }));
+                        IsNetworkBusy = false;
                     }
                 }
                 catch (Exception ex)
                 {
                     this.Invoke(new Action(() => MessageBox.Show($"Lỗi truyền dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)));
+                    IsNetworkBusy = false;
                 }
             });
 
             btnDownloadFile.Enabled = true;
-            IsNetworkBusy = false;
         }
 
         private void btnLogout2_Click(object sender, EventArgs e)
