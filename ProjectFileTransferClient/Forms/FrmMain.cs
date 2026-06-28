@@ -147,10 +147,8 @@ namespace ProjectFileTransferClient.Forms
                         string fileName = fileInfo[0];
                         string fileSize = "0 KB";
 
-<<<<<<< Updated upstream
-=======
                         // 1. Lấy thông tin Người upload thực tế bằng câu lệnh if-else
->>>>>>> Stashed changes
+
                         string uploader = "Hệ thống";
                         if (fileInfo.Length > 2)
                         {
@@ -179,22 +177,18 @@ namespace ProjectFileTransferClient.Forms
                             else fileSize = (size / 1024.0 / 1024.0).ToString("F2") + " MB";
                         }
 
-<<<<<<< Updated upstream
+
                         if (fileInfo.Length > 2) uploader = fileInfo[2];
                         if (fileInfo.Length > 3) uploadDate = fileInfo[3];
                         if (fileInfo.Length > 4) serverPath = fileInfo[4];
 
-=======
->>>>>>> Stashed changes
                         ListViewItem item = new ListViewItem(fileName);
                         item.SubItems.Add(fileSize);
                         item.SubItems.Add(Path.GetExtension(fileName));
                         item.SubItems.Add(uploadDate);
 
-<<<<<<< Updated upstream
-=======
                         // Đóng gói thông tin chuẩn vào thuộc tính Tag để hiển thị chính xác lên khung khi Click chọn
->>>>>>> Stashed changes
+
                         item.Tag = new string[] { uploader, uploadDate, serverPath };
 
                         lvFiles.Items.Add(item);
@@ -226,15 +220,6 @@ namespace ProjectFileTransferClient.Forms
                 MessageBox.Show($"Lỗi nạp danh sách file: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        private void button1_Click(object sender, EventArgs e) { }
-        private void button5_Click(object sender, EventArgs e) { }
-        private void picLogo_Click(object sender, EventArgs e) { }
-        private void label1_Click(object sender, EventArgs e) { }
-        private void button2_Click(object sender, EventArgs e) { }
-        private void button2_Click_1(object sender, EventArgs e) { }
-        private void groupBox1_Enter(object sender, EventArgs e) { }
-        private void grpFileList_Enter(object sender, EventArgs e) { }
 
         private void lvFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -279,19 +264,6 @@ namespace ProjectFileTransferClient.Forms
             pictureBox1.Image = null;
         }
 
-        private void label2_Click(object sender, EventArgs e) { }
-        private void panel2_Paint(object sender, PaintEventArgs e) { }
-        private void lblTextFile_Click(object sender, EventArgs e) { }
-        private void pnlDownload_Paint(object sender, PaintEventArgs e) { }
-        private void panel1_Paint(object sender, PaintEventArgs e) { }
-        private void label9_Click(object sender, EventArgs e) { }
-        private void grpStatistics_Enter(object sender, EventArgs e) { }
-        private void lblTransferred_Click(object sender, EventArgs e) { }
-        private void grpTransfer_Enter(object sender, EventArgs e) { }
-        private void label3_Click(object sender, EventArgs e) { }
-        private void lblRemainTitle_Click(object sender, EventArgs e) { }
-        private void dgvHistory_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
-
         private void button3_Click(object sender, EventArgs e)
         {
             clientManager.Disconnect();
@@ -311,8 +283,6 @@ namespace ProjectFileTransferClient.Forms
         {
             LoadFileList();
         }
-
-        private void btnRefreshList_Click_1(object sender, EventArgs e) { }
 
         // ===========================================================//
         // UPLOAD FILE THÀNH CÔNG //
@@ -635,10 +605,6 @@ namespace ProjectFileTransferClient.Forms
             this.Close();
         }
 
-        private void btnRefresh_Click(object sender, EventArgs e) { }
-        private void progressTransfer_Click(object sender, EventArgs e) { }
-        private void lblTransferStatus_Click(object sender, EventArgs e) { }
-
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
             string keyword = txtSearch.Text.Trim().ToLower();
@@ -665,13 +631,6 @@ namespace ProjectFileTransferClient.Forms
 
             lblTotalFiles.Text = lvFiles.Items.Count.ToString();
         }
-
-        private void lblSpeed_Click(object sender, EventArgs e) { }
-        private void lblElapsed_Click(object sender, EventArgs e) { }
-        private void lblSpeedTitle_Click(object sender, EventArgs e) { }
-        private void pnlUpload_Paint(object sender, PaintEventArgs e) { }
-        private void lblUploadCount_Click(object sender, EventArgs e) { }
-        private void lblDownloadCount_Click(object sender, EventArgs e) { }
 
         // ===========================================================//
         // XUẤT LỊCH SỬ TRUYỀN FILE //
@@ -713,16 +672,6 @@ namespace ProjectFileTransferClient.Forms
                 }
             }
         }
-
-        private void lblFileName1(object sender, EventArgs e) { }
-        private void lblFileSize_Click(object sender, EventArgs e) { }
-        private void lblFileType_Click(object sender, EventArgs e) { }
-        private void lblUploadDate_Click(object sender, EventArgs e) { }
-        private void lblUploadTime_Click(object sender, EventArgs e) { }
-        private void lblPath_Click(object sender, EventArgs e) { }
-        private void lblTotalFiles_Click(object sender, EventArgs e) { }
-        private void lblUploadCount_Click_1(object sender, EventArgs e) { }
-        private void pictureBox1_Click(object sender, EventArgs e) { }
 
         // ===========================================================//
         // CÁC HÀM XỬ LÝ LƯU VÀ XÓA LỊCH SỬ CỤC BỘ                  //
@@ -767,19 +716,6 @@ namespace ProjectFileTransferClient.Forms
             catch { }
         }
 
-
-
-        private void pnlOnline_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void label2_Click_1(object sender, EventArgs e)
-        {
-
-        }
-
-<<<<<<< Updated upstream
         private void btnDeleteList_Click(object sender, EventArgs e)
         {
             IsNetworkBusy = true; // CHẶN ĐẾM ONLINE TẠM THỜI
@@ -943,27 +879,5 @@ namespace ProjectFileTransferClient.Forms
             public string RemainTimeText { get; set; } = "00:00:00";
             public string StateText { get; set; } = "Sẵn sàng";
         }
-
-=======
-        private void lblFileSize_Click_1(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pnlUpload_Paint_1(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void lblIconUpload_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblDownloadCount_Click_1(object sender, EventArgs e)
-        {
-
-        }
->>>>>>> Stashed changes
     }
 }

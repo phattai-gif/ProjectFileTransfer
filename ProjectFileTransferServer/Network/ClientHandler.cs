@@ -259,7 +259,6 @@ namespace ProjectFileTransferServer.Network
             if (parts.Length > 3) uploader = parts[3];
 
             //  Lấy Tên người dùng từ vị trí cuối cùng do Client gửi lên
-            string uploader = "Hệ thống";
             if (parts.Length >= 5)
             {
                 uploader = parts[4]; // Vị trí số 4 là Username
@@ -357,35 +356,8 @@ namespace ProjectFileTransferServer.Network
 
             try
             {
-<<<<<<< Updated upstream
+                // 1. Lấy danh sách file hiện có từ fileManager (Chỉ khai báo 1 lần duy nhất)
                 string[] files = fileManager.GetFileListWithSize();
-                StringBuilder response = new StringBuilder(Protocol.LIST_SUCCESS);
-
-                foreach (string file in files)
-                {
-                    // Tách tên file và size (Giả sử FileManager trả về dạng "TenFile.ext#Size")
-                    string[] fileInfo = file.Split('#');
-                    string fName = fileInfo[0];
-                    string fSize = fileInfo.Length > 1 ? fileInfo[1] : "0";
-
-                    // Đọc thông tin người upload từ file Metadata
-                    var meta = GetMetadata(fName);
-                    string uploader = meta.Uploader;
-                    string date = meta.UploadDate;
-                    string path = $"/server/storage/uploads/{fName}";
-
-                    //  Ghép chuỗi theo đúng cấu trúc Client đang chờ: FileName#Size#Username#UploadDate#ServerPath
-                    response.Append(Protocol.DELIMITER);
-                    response.Append($"{fName}#{fSize}#{uploader}#{date}#{path}");
-                }
-
-                writer.WriteLine(response.ToString());
-                logCallback?.Invoke($"[LIST] Thành công: Đã gửi danh sách gồm {files.Length} file cho Client.");
-=======
-                // 1. Lấy danh sách file hiện có từ fileManager
-                string[] files = fileManager.GetFileListWithSize();
-
-                // Khởi tạo chuỗi phản hồi bắt đầu bằng mã thành công
                 StringBuilder response = new StringBuilder(Protocol.LIST_SUCCESS);
 
                 // 2. Duyệt qua từng file để bóc tách và ghép chuỗi dữ liệu
@@ -393,38 +365,27 @@ namespace ProjectFileTransferServer.Network
                 {
                     if (string.IsNullOrEmpty(file)) continue;
 
-                    // Giả sử mỗi phần tử trong mảng 'files' đang có dạng: "TenFile.txt#1024" hoặc tương tự
-                    string[] fileParts = file.Split('#');
+                    // Tách tên file và size ban đầu (Giả sử FileManager trả về dạng "TenFile.ext#Size")
+                    string[] fileInfo = file.Split('#');
+                    string fName = fileInfo[0];
+                    string fSize = fileInfo.Length > 1 ? fileInfo[1] : "0";
 
-                    string name = fileParts[0];
-                    string size = "0";
-                    if (fileParts.Length > 1)
-                    {
-                        size = fileParts[1];
-                    }
+                    // 3. Đọc thông tin người upload và ngày giờ thực tế từ file Metadata
+                    var meta = GetMetadata(fName);
+                    string uploader = string.IsNullOrEmpty(meta.Uploader) ? "Hệ thống" : meta.Uploader;
+                    string date = string.IsNullOrEmpty(meta.UploadDate) ? DateTime.Now.ToString("dd/MM/yyyy HH:mm") : meta.UploadDate;
+                    string path = $"/server/storage/uploads/{fName}";
 
-                    // Lấy người upload thực tế đã lưu ở Server (nếu chưa có cơ chế lưu, tạm để mặc định)
-                    string uploader = "Hệ thống";
-                    if (fileParts.Length > 2)
-                    {
-                        uploader = fileParts[2];
-                    }
-
-                    // Lấy ngày upload thực tế của file từ hệ thống
-                    string date = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-                    if (fileParts.Length > 3)
-                    {
-                        date = fileParts[3];
-                    }
-
-                    // 3. Ghép thông tin của file này vào chuỗi tổng phản hồi bằng Protocol.DELIMITER
-                    string fileData = $"{name}#{size}#{uploader}#{date}";
+                    // 4. Ghép chuỗi theo đúng cấu trúc Client đang chờ: FileName#Size#Username#UploadDate#ServerPath
+                    string fileData = $"{fName}#{fSize}#{uploader}#{date}#{path}";
                     response.Append(Protocol.DELIMITER).Append(fileData);
                 }
 
-                // 4. Gửi toàn bộ chuỗi response.ToString() này về cho Client qua Socket
-                // clientManager.SendMessage(response.ToString()); 
->>>>>>> Stashed changes
+                // 5. Gửi toàn bộ chuỗi phản hồi về cho Client qua Stream/Socket
+                writer.WriteLine(response.ToString());
+                writer.Flush(); // Đảm bảo dữ liệu được đẩy đi ngay lập tức
+
+                logCallback?.Invoke($"[LIST] Thành công: Đã gửi danh sách gồm {files.Length} file cho Client.");
             }
             catch (Exception ex)
             {
