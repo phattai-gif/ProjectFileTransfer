@@ -146,5 +146,10 @@ namespace ProjectFileTransferServer
                 MessageBox.Show($"Lỗi khi xóa file: {ex.Message}");
             }
         }
+
+        private void lstServerFiles_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

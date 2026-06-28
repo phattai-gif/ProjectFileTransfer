@@ -8,10 +8,13 @@ namespace ProjectFileTransferClient.Network
     {
         public void SendFile(string filePath, NetworkStream stream, Action<long, long> progressCallback)
         {
+            string fileName = Path.GetFileName(filePath);
             using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
+                long fileSize = fs.Length;
                 long totalBytes = fs.Length;
                 long sentBytes = 0;
+                string header = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}{Protocol.DELIMITER}{ClientManager.ClientName}";
 
                 // Khởi tạo buffer 8KB cho mỗi chunk truyền đi
                 byte[] buffer = new byte[8192];

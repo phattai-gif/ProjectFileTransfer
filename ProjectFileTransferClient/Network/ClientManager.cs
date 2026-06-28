@@ -10,6 +10,7 @@ namespace ProjectFileTransferClient.Network
         private TcpClient? client;
         private StreamReader? reader;
         private StreamWriter? writer;
+        public static string ClientName { get; set; } = "Anonymous";
 
         public bool Connect(string ip, int port)
         {
@@ -175,8 +176,7 @@ namespace ProjectFileTransferClient.Network
         //================================================
         ////================================================
         // HÀM DOWNLOAD FILE TỪ SERVER
-        public bool DownloadFile(string fileName,
-                                 string savePath)
+        public bool DownloadFile(string fileName, string savePath)
         {
             try
             {

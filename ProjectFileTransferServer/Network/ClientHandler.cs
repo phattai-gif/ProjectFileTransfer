@@ -1,9 +1,11 @@
-﻿using System;
+﻿using ProjectFileTransferServer.Services;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using System.IO;
-using ProjectFileTransferServer.Services;
+using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ProjectFileTransferServer.Network
 {
@@ -253,6 +255,8 @@ namespace ProjectFileTransferServer.Network
 
             string fileName = parts[1];
             long fileSize = long.Parse(parts[2]);
+            string uploader = "Hệ thống";
+            if (parts.Length > 3) uploader = parts[3];
 
             //  Lấy Tên người dùng từ vị trí cuối cùng do Client gửi lên
             string uploader = "Hệ thống";
@@ -349,10 +353,11 @@ namespace ProjectFileTransferServer.Network
         //List
         private void SendFileList()
         {
-            logCallback?.Invoke("[LIST] Client đang yêu cầu lấy danh sách file... ");
+            logCallback?.Invoke("[LIST] Client đang yêu cầu lấy danh sách file...");
 
             try
             {
+<<<<<<< Updated upstream
                 string[] files = fileManager.GetFileListWithSize();
                 StringBuilder response = new StringBuilder(Protocol.LIST_SUCCESS);
 
@@ -376,10 +381,54 @@ namespace ProjectFileTransferServer.Network
 
                 writer.WriteLine(response.ToString());
                 logCallback?.Invoke($"[LIST] Thành công: Đã gửi danh sách gồm {files.Length} file cho Client.");
+=======
+                // 1. Lấy danh sách file hiện có từ fileManager
+                string[] files = fileManager.GetFileListWithSize();
+
+                // Khởi tạo chuỗi phản hồi bắt đầu bằng mã thành công
+                StringBuilder response = new StringBuilder(Protocol.LIST_SUCCESS);
+
+                // 2. Duyệt qua từng file để bóc tách và ghép chuỗi dữ liệu
+                foreach (string file in files)
+                {
+                    if (string.IsNullOrEmpty(file)) continue;
+
+                    // Giả sử mỗi phần tử trong mảng 'files' đang có dạng: "TenFile.txt#1024" hoặc tương tự
+                    string[] fileParts = file.Split('#');
+
+                    string name = fileParts[0];
+                    string size = "0";
+                    if (fileParts.Length > 1)
+                    {
+                        size = fileParts[1];
+                    }
+
+                    // Lấy người upload thực tế đã lưu ở Server (nếu chưa có cơ chế lưu, tạm để mặc định)
+                    string uploader = "Hệ thống";
+                    if (fileParts.Length > 2)
+                    {
+                        uploader = fileParts[2];
+                    }
+
+                    // Lấy ngày upload thực tế của file từ hệ thống
+                    string date = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                    if (fileParts.Length > 3)
+                    {
+                        date = fileParts[3];
+                    }
+
+                    // 3. Ghép thông tin của file này vào chuỗi tổng phản hồi bằng Protocol.DELIMITER
+                    string fileData = $"{name}#{size}#{uploader}#{date}";
+                    response.Append(Protocol.DELIMITER).Append(fileData);
+                }
+
+                // 4. Gửi toàn bộ chuỗi response.ToString() này về cho Client qua Socket
+                // clientManager.SendMessage(response.ToString()); 
+>>>>>>> Stashed changes
             }
             catch (Exception ex)
             {
-                logCallback?.Invoke($"[LIST] Lỗi khi xử lý gửi danh sách file: {ex.Message}");
+                logCallback?.Invoke($"[ERROR] Lỗi gửi danh sách file: {ex.Message}");
             }
         }
 

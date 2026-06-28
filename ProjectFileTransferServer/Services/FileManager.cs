@@ -47,9 +47,10 @@ namespace ProjectFileTransferServer.Services
         }
         public string[] GetFileList()
         {
-            //Kiểm tra thư mục Storage (Kiểm tra thư mục Storage có tồn tại không.Nếu không có thì trả về mảng rỗng.)
+            //Kiểm tra thư mục Storage có tồn tại không. Nếu không có thì trả về mảng rỗng)
             if (!Directory.Exists(storageFolderPath))
                 return new string[0];
+
             //Lấy tất cả file
             string[] files = Directory.GetFiles(storageFolderPath);
             //Tạo mảng kết quả
@@ -60,11 +61,14 @@ namespace ProjectFileTransferServer.Services
                 //đọc thông tin file
                 FileInfo info = new FileInfo(files[i]);
 
-                result[i] = info.Name + "#" + info.Length;
+                // Ghép thêm ngày giờ chỉnh sửa cuối cùng của file
+                string uploadDate = info.LastWriteTime.ToString("dd/MM/yyyy HH:mm");
+                result[i] = info.Name + "#" + info.Length + "#" + uploadDate;
             }
 
             return result;
         }
+
         // ======================================================
         // HÀM LẤY DANH SÁCH FILE KÈM KÍCH THƯỚC TỪ THƯ MỤC STORAGE
         public string[] GetFileListWithSize()
@@ -81,8 +85,9 @@ namespace ProjectFileTransferServer.Services
                 // Lấy thông tin file
                 FileInfo info = new FileInfo(fullPaths[i]);
 
-                // Ghép tên file và kích thước
-                result[i] = info.Name + "#" + info.Length;
+                // Ghép thêm ngày giờ chỉnh sửa cuối cùng của file thực tế vào chuỗi kết quả
+                string uploadDate = info.LastWriteTime.ToString("dd/MM/yyyy HH:mm");
+                result[i] = info.Name + "#" + info.Length + "#" + uploadDate;
             }
 
             return result;

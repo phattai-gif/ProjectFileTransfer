@@ -129,6 +129,7 @@
             lstServerFiles.Name = "lstServerFiles";
             lstServerFiles.Size = new Size(252, 79);
             lstServerFiles.TabIndex = 8;
+            lstServerFiles.SelectedIndexChanged += lstServerFiles_SelectedIndexChanged;
             // 
             // label5
             // 

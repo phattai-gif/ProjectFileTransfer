@@ -1,6 +1,7 @@
 using ProjectFileTransferClient.Forms;
 using ProjectFileTransferClient.Network;
 using System.Drawing;
+using System.Xml.Linq;
 namespace ProjectFileTransferClient
 {
     public partial class FrmConnect : Form
@@ -75,6 +76,7 @@ namespace ProjectFileTransferClient
             GlobalConnectTime = DateTime.Now; // ghi nhận thời gian kết nối
             // ------------------------------------------
             string ip = txtIP.Text.Trim();
+            ClientManager.ClientName = txtUsername.Text.Trim();
 
             if (!int.TryParse(txtPort.Text.Trim(), out int port))
             {

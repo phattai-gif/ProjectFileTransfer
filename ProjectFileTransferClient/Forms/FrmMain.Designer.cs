@@ -63,10 +63,6 @@
             btnDeleteHistory = new Button();
             grpHistory = new GroupBox();
             dgvHistory = new DataGridView();
-            colHistoryFile = new DataGridViewTextBoxColumn();
-            colHistoryType = new DataGridViewTextBoxColumn();
-            colHistoryStatus = new DataGridViewTextBoxColumn();
-            colHistoryTime = new DataGridViewTextBoxColumn();
             grpStatistics = new GroupBox();
             pnlOnline = new Panel();
             lblOnlineCount = new Label();
@@ -118,6 +114,10 @@
             columnHeader2 = new ColumnHeader();
             columnHeader3 = new ColumnHeader();
             columnHeader4 = new ColumnHeader();
+            colHistoryFile = new DataGridViewTextBoxColumn();
+            colHistoryType = new DataGridViewTextBoxColumn();
+            colHistoryStatus = new DataGridViewTextBoxColumn();
+            colHistoryTime = new DataGridViewTextBoxColumn();
             pnlSidebar.SuspendLayout();
             pnlConnection.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)picLogo).BeginInit();
@@ -562,9 +562,15 @@
             grpHistory.Controls.Add(dgvHistory);
             grpHistory.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpHistory.ForeColor = Color.RoyalBlue;
+
             grpHistory.Location = new Point(761, 458);
             grpHistory.Name = "grpHistory";
             grpHistory.Size = new Size(556, 262);
+
+            grpHistory.Location = new Point(722, 427);
+            grpHistory.Name = "grpHistory";
+            grpHistory.Size = new Size(554, 253);
+
             grpHistory.TabIndex = 2;
             grpHistory.TabStop = false;
             grpHistory.Text = "LỊCH SỬ TRUYỀN FILE GẦN ĐÂY";
@@ -585,6 +591,7 @@
             dgvHistory.RowHeadersVisible = false;
             dgvHistory.RowHeadersWidth = 62;
             dgvHistory.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
             dgvHistory.Size = new Size(550, 232);
             dgvHistory.TabIndex = 0;
             dgvHistory.CellContentClick += dgvHistory_CellContentClick;
@@ -621,6 +628,12 @@
             colHistoryTime.ReadOnly = true;
             colHistoryTime.Width = 110;
             // 
+
+            dgvHistory.Size = new Size(548, 223);
+            dgvHistory.TabIndex = 0;
+            dgvHistory.CellContentClick += dgvHistory_CellContentClick;
+            // 
+
             // grpStatistics
             // 
             grpStatistics.Anchor = AnchorStyles.Top | AnchorStyles.Right;
@@ -631,9 +644,15 @@
             grpStatistics.Controls.Add(pnlTotalFile);
             grpStatistics.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpStatistics.ForeColor = Color.RoyalBlue;
+
             grpStatistics.Location = new Point(761, 236);
             grpStatistics.Name = "grpStatistics";
             grpStatistics.Size = new Size(553, 210);
+
+            grpStatistics.Location = new Point(722, 242);
+            grpStatistics.Name = "grpStatistics";
+            grpStatistics.Size = new Size(551, 179);
+
             grpStatistics.TabIndex = 2;
             grpStatistics.TabStop = false;
             grpStatistics.Text = "THỐNG KÊ";
@@ -646,9 +665,13 @@
             pnlOnline.Controls.Add(lblOnlineCount);
             pnlOnline.Controls.Add(lblTitleOnline);
             pnlOnline.Controls.Add(lblIconOnline);
+
             pnlOnline.Location = new Point(296, 122);
+
+            pnlOnline.Location = new Point(321, 109);
+
             pnlOnline.Name = "pnlOnline";
-            pnlOnline.Size = new Size(184, 72);
+            pnlOnline.Size = new Size(191, 59);
             pnlOnline.TabIndex = 3;
             pnlOnline.Paint += pnlOnline_Paint;
             // 
@@ -657,7 +680,7 @@
             lblOnlineCount.AutoSize = true;
             lblOnlineCount.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblOnlineCount.ForeColor = Color.Purple;
-            lblOnlineCount.Location = new Point(67, 30);
+            lblOnlineCount.Location = new Point(92, 26);
             lblOnlineCount.Name = "lblOnlineCount";
             lblOnlineCount.Size = new Size(28, 32);
             lblOnlineCount.TabIndex = 2;
@@ -668,7 +691,7 @@
             lblTitleOnline.AutoSize = true;
             lblTitleOnline.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTitleOnline.ForeColor = SystemColors.ActiveCaptionText;
-            lblTitleOnline.Location = new Point(57, 2);
+            lblTitleOnline.Location = new Point(65, 3);
             lblTitleOnline.Name = "lblTitleOnline";
             lblTitleOnline.Size = new Size(125, 25);
             lblTitleOnline.TabIndex = 1;
@@ -681,7 +704,7 @@
             lblIconOnline.BackColor = Color.MediumPurple;
             lblIconOnline.Font = new Font("Segoe UI", 12F);
             lblIconOnline.ForeColor = Color.Purple;
-            lblIconOnline.Location = new Point(3, 17);
+            lblIconOnline.Location = new Point(12, 8);
             lblIconOnline.Name = "lblIconOnline";
             lblIconOnline.Size = new Size(47, 32);
             lblIconOnline.TabIndex = 0;
@@ -695,9 +718,13 @@
             pnlUpload.Controls.Add(lblTitleUpload);
             pnlUpload.Controls.Add(lblIconUpload);
             pnlUpload.ForeColor = Color.RoyalBlue;
+
             pnlUpload.Location = new Point(296, 34);
+
+            pnlUpload.Location = new Point(321, 37);
+
             pnlUpload.Name = "pnlUpload";
-            pnlUpload.Size = new Size(184, 72);
+            pnlUpload.Size = new Size(191, 54);
             pnlUpload.TabIndex = 4;
             // 
             // lblUploadCount
@@ -705,7 +732,7 @@
             lblUploadCount.AutoSize = true;
             lblUploadCount.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblUploadCount.ForeColor = Color.Green;
-            lblUploadCount.Location = new Point(54, 30);
+            lblUploadCount.Location = new Point(92, 21);
             lblUploadCount.Name = "lblUploadCount";
             lblUploadCount.Size = new Size(28, 32);
             lblUploadCount.TabIndex = 2;
@@ -717,7 +744,7 @@
             lblTitleUpload.AutoSize = true;
             lblTitleUpload.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTitleUpload.ForeColor = Color.Black;
-            lblTitleUpload.Location = new Point(54, 3);
+            lblTitleUpload.Location = new Point(67, 0);
             lblTitleUpload.Name = "lblTitleUpload";
             lblTitleUpload.Size = new Size(97, 25);
             lblTitleUpload.TabIndex = 1;
@@ -729,11 +756,12 @@
             lblIconUpload.BackColor = Color.FromArgb(192, 255, 192);
             lblIconUpload.Font = new Font("Segoe UI", 15F);
             lblIconUpload.ForeColor = Color.Green;
-            lblIconUpload.Location = new Point(3, 13);
+            lblIconUpload.Location = new Point(14, 7);
             lblIconUpload.Name = "lblIconUpload";
             lblIconUpload.Size = new Size(34, 41);
             lblIconUpload.TabIndex = 0;
             lblIconUpload.Text = "⬆";
+
             // 
             // pnlDownload
             // 
@@ -742,9 +770,13 @@
             pnlDownload.Controls.Add(lblDownloadCount);
             pnlDownload.Controls.Add(lblTitleDownload);
             pnlDownload.Controls.Add(lblIconDownload);
+
             pnlDownload.Location = new Point(65, 122);
+
+            pnlDownload.Location = new Point(90, 106);
+
             pnlDownload.Name = "pnlDownload";
-            pnlDownload.Size = new Size(184, 72);
+            pnlDownload.Size = new Size(180, 62);
             pnlDownload.TabIndex = 3;
             pnlDownload.Paint += panel1_Paint;
             // 
@@ -753,18 +785,19 @@
             lblDownloadCount.AutoSize = true;
             lblDownloadCount.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblDownloadCount.ForeColor = Color.Orange;
-            lblDownloadCount.Location = new Point(60, 30);
+            lblDownloadCount.Location = new Point(98, 29);
             lblDownloadCount.Name = "lblDownloadCount";
             lblDownloadCount.Size = new Size(28, 32);
             lblDownloadCount.TabIndex = 2;
             lblDownloadCount.Text = "0";
+
             // 
             // lblTitleDownload
             // 
             lblTitleDownload.AutoSize = true;
             lblTitleDownload.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTitleDownload.ForeColor = SystemColors.ActiveCaptionText;
-            lblTitleDownload.Location = new Point(57, 2);
+            lblTitleDownload.Location = new Point(57, 4);
             lblTitleDownload.Name = "lblTitleDownload";
             lblTitleDownload.Size = new Size(122, 25);
             lblTitleDownload.TabIndex = 1;
@@ -776,7 +809,7 @@
             lblIconDownload.BackColor = Color.MistyRose;
             lblIconDownload.Font = new Font("Segoe UI", 14F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblIconDownload.ForeColor = Color.Orange;
-            lblIconDownload.Location = new Point(7, 15);
+            lblIconDownload.Location = new Point(12, 6);
             lblIconDownload.Name = "lblIconDownload";
             lblIconDownload.Size = new Size(32, 38);
             lblIconDownload.TabIndex = 0;
@@ -789,9 +822,13 @@
             pnlTotalFile.Controls.Add(lblTotalFiles);
             pnlTotalFile.Controls.Add(lblTextFile);
             pnlTotalFile.Controls.Add(lblIconFile);
+
             pnlTotalFile.Location = new Point(65, 34);
+
+            pnlTotalFile.Location = new Point(90, 34);
+
             pnlTotalFile.Name = "pnlTotalFile";
-            pnlTotalFile.Size = new Size(184, 72);
+            pnlTotalFile.Size = new Size(180, 57);
             pnlTotalFile.TabIndex = 0;
             // 
             // lblTotalFiles
@@ -799,7 +836,7 @@
             lblTotalFiles.AutoSize = true;
             lblTotalFiles.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTotalFiles.ForeColor = Color.RoyalBlue;
-            lblTotalFiles.Location = new Point(67, 30);
+            lblTotalFiles.Location = new Point(98, 24);
             lblTotalFiles.Name = "lblTotalFiles";
             lblTotalFiles.Size = new Size(28, 32);
             lblTotalFiles.TabIndex = 2;
@@ -849,7 +886,11 @@
             grpTransfer.ForeColor = Color.RoyalBlue;
             grpTransfer.Location = new Point(19, 417);
             grpTransfer.Name = "grpTransfer";
+
             grpTransfer.Size = new Size(710, 349);
+
+            grpTransfer.Size = new Size(701, 272);
+
             grpTransfer.TabIndex = 2;
             grpTransfer.TabStop = false;
             grpTransfer.Text = "TIẾN TRÌNH TRUYỀN FILE";
@@ -1078,9 +1119,15 @@
             grpFileInfo.Controls.Add(pictureBox1);
             grpFileInfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpFileInfo.ForeColor = Color.RoyalBlue;
+
             grpFileInfo.Location = new Point(761, 10);
             grpFileInfo.Name = "grpFileInfo";
             grpFileInfo.Size = new Size(553, 228);
+
+            grpFileInfo.Location = new Point(722, 10);
+            grpFileInfo.Name = "grpFileInfo";
+            grpFileInfo.Size = new Size(554, 228);
+
             grpFileInfo.TabIndex = 1;
             grpFileInfo.TabStop = false;
             grpFileInfo.Text = "THÔNG TIN FILE ĐƯỢC CHỌN";
@@ -1091,72 +1138,96 @@
             lblPath.AutoSize = true;
             lblPath.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblPath.ForeColor = Color.FromArgb(0, 0, 64);
+
             lblPath.Location = new Point(160, 195);
+
+            lblPath.Location = new Point(123, 195);
+
             lblPath.Name = "lblPath";
-            lblPath.Size = new Size(114, 20);
+            lblPath.Size = new Size(94, 20);
             lblPath.TabIndex = 5;
-            lblPath.Text = "Đường dẫn    :";
+            lblPath.Text = "Đường dẫn:";
             // 
             // lblUploadTime
             // 
             lblUploadTime.AutoSize = true;
             lblUploadTime.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblUploadTime.ForeColor = Color.FromArgb(0, 0, 64);
+
             lblUploadTime.Location = new Point(160, 162);
+
+            lblUploadTime.Location = new Point(123, 162);
+
             lblUploadTime.Name = "lblUploadTime";
-            lblUploadTime.Size = new Size(126, 20);
+            lblUploadTime.Size = new Size(106, 20);
             lblUploadTime.TabIndex = 4;
-            lblUploadTime.Text = "Ngày upload    :";
+            lblUploadTime.Text = "Ngày upload:";
             // 
             // lblFileType
             // 
             lblFileType.AutoSize = true;
             lblFileType.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblFileType.ForeColor = Color.FromArgb(0, 0, 64);
+
             lblFileType.Location = new Point(160, 97);
+
+            lblFileType.Location = new Point(123, 102);
+
             lblFileType.Name = "lblFileType";
-            lblFileType.Size = new Size(93, 20);
+            lblFileType.Size = new Size(73, 20);
             lblFileType.TabIndex = 3;
-            lblFileType.Text = "Loại file    :";
+            lblFileType.Text = "Loại file:";
             // 
             // lblFileSize
             // 
             lblFileSize.AutoSize = true;
             lblFileSize.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblFileSize.ForeColor = Color.FromArgb(0, 0, 64);
+
             lblFileSize.Location = new Point(160, 69);
+
+            lblFileSize.Location = new Point(123, 72);
+
             lblFileSize.Name = "lblFileSize";
-            lblFileSize.Size = new Size(123, 20);
+            lblFileSize.Size = new Size(103, 20);
             lblFileSize.TabIndex = 2;
-            lblFileSize.Text = "Kích thước    :  ";
+            lblFileSize.Text = "Kích thước:  ";
             // 
             // lblUploadDate
             // 
             lblUploadDate.AutoSize = true;
             lblUploadDate.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblUploadDate.ForeColor = Color.FromArgb(0, 0, 64);
+
             lblUploadDate.Location = new Point(160, 129);
+
+            lblUploadDate.Location = new Point(123, 132);
+
             lblUploadDate.Name = "lblUploadDate";
-            lblUploadDate.Size = new Size(131, 20);
+            lblUploadDate.Size = new Size(111, 20);
             lblUploadDate.TabIndex = 2;
-            lblUploadDate.Text = "Người upload    :";
+            lblUploadDate.Text = "Người upload:";
             // 
             // lblFileName
             // 
             lblFileName.AutoSize = true;
             lblFileName.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblFileName.ForeColor = Color.FromArgb(0, 0, 64);
+
             lblFileName.Location = new Point(160, 39);
+
+            lblFileName.Location = new Point(123, 39);
+
             lblFileName.Name = "lblFileName";
-            lblFileName.Size = new Size(89, 20);
+            lblFileName.Size = new Size(69, 20);
             lblFileName.TabIndex = 1;
-            lblFileName.Text = "Tên file    :\r\n";
+            lblFileName.Text = "Tên file:\r\n";
             lblFileName.Click += label2_Click;
             // 
             // pictureBox1
             // 
             pictureBox1.Image = Properties.Resources.Screenshot_2026_06_20_031745;
-            pictureBox1.Location = new Point(28, 49);
+            pictureBox1.Location = new Point(15, 49);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(93, 134);
             pictureBox1.TabIndex = 0;
@@ -1172,7 +1243,11 @@
             grpFileList.ForeColor = Color.RoyalBlue;
             grpFileList.Location = new Point(19, 10);
             grpFileList.Name = "grpFileList";
+
             grpFileList.Size = new Size(710, 382);
+
+            grpFileList.Size = new Size(697, 386);
+
             grpFileList.TabIndex = 0;
             grpFileList.TabStop = false;
             grpFileList.Text = "DANH SÁCH FILE TRÊN SERVER";
@@ -1186,7 +1261,11 @@
             lvFiles.GridLines = true;
             lvFiles.Location = new Point(3, 30);
             lvFiles.Name = "lvFiles";
+
             lvFiles.Size = new Size(704, 349);
+
+            lvFiles.Size = new Size(691, 353);
+
             lvFiles.TabIndex = 0;
             lvFiles.UseCompatibleStateImageBehavior = false;
             lvFiles.View = View.Details;
@@ -1211,6 +1290,38 @@
             // 
             columnHeader4.Text = "Ngày Upload";
             columnHeader4.Width = 210;
+            // 
+            // colHistoryFile
+            // 
+            colHistoryFile.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            colHistoryFile.HeaderText = "File";
+            colHistoryFile.MinimumWidth = 8;
+            colHistoryFile.Name = "colHistoryFile";
+            colHistoryFile.ReadOnly = true;
+            // 
+            // colHistoryType
+            // 
+            colHistoryType.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            colHistoryType.HeaderText = "Loại";
+            colHistoryType.MinimumWidth = 8;
+            colHistoryType.Name = "colHistoryType";
+            colHistoryType.ReadOnly = true;
+            // 
+            // colHistoryStatus
+            // 
+            colHistoryStatus.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            colHistoryStatus.HeaderText = "Trạng thái";
+            colHistoryStatus.MinimumWidth = 8;
+            colHistoryStatus.Name = "colHistoryStatus";
+            colHistoryStatus.ReadOnly = true;
+            // 
+            // colHistoryTime
+            // 
+            colHistoryTime.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            colHistoryTime.HeaderText = "Thời gian";
+            colHistoryTime.MinimumWidth = 8;
+            colHistoryTime.Name = "colHistoryTime";
+            colHistoryTime.ReadOnly = true;
             // 
             // FrmMain
             // 
@@ -1335,11 +1446,16 @@
         private Label lblTransferFileName;
         private PictureBox pictureBox2;
         private DataGridView dgvHistory;
+
         private Button btnDeleteHistory;
+
+        private Label ConnectionInfo;
+
         private DataGridViewTextBoxColumn colHistoryFile;
         private DataGridViewTextBoxColumn colHistoryType;
         private DataGridViewTextBoxColumn colHistoryStatus;
         private DataGridViewTextBoxColumn colHistoryTime;
+
         private Label lblSidebarCodePort;
         private Label d;
         private Label lblSidebarStatus;
@@ -1357,5 +1473,6 @@
         private Button btnDownload;
         private Button btnUpload;
         private Button btnDeleteList;
+
     }
 }

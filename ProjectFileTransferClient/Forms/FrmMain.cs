@@ -142,14 +142,35 @@ namespace ProjectFileTransferClient.Forms
                     {
                         if (string.IsNullOrEmpty(parts[i])) continue;
 
+                        // Server trả về cấu trúc: fileInfo[0]=Name, fileInfo[1]=Size, fileInfo[2]=Uploader, fileInfo[3]=Date
                         string[] fileInfo = parts[i].Split('#');
                         string fileName = fileInfo[0];
                         string fileSize = "0 KB";
 
+<<<<<<< Updated upstream
+=======
+                        // 1. Lấy thông tin Người upload thực tế bằng câu lệnh if-else
+>>>>>>> Stashed changes
                         string uploader = "Hệ thống";
-                        string uploadDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                        if (fileInfo.Length > 2)
+                        {
+                            uploader = fileInfo[2];
+                        }
+
+                        // 2. Lấy thông tin Ngày upload thực tế bằng câu lệnh if-else
+                        string uploadDate = "";
+                        if (fileInfo.Length > 3)
+                        {
+                            uploadDate = fileInfo[3];
+                        }
+                        else
+                        {
+                            uploadDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                        }
+
                         string serverPath = $"/server/storage/uploads/{fileName}";
 
+                        // 3. Tính toán kích thước hiển thị trực quan
                         if (fileInfo.Length > 1)
                         {
                             long size = long.Parse(fileInfo[1]);
@@ -158,15 +179,22 @@ namespace ProjectFileTransferClient.Forms
                             else fileSize = (size / 1024.0 / 1024.0).ToString("F2") + " MB";
                         }
 
+<<<<<<< Updated upstream
                         if (fileInfo.Length > 2) uploader = fileInfo[2];
                         if (fileInfo.Length > 3) uploadDate = fileInfo[3];
                         if (fileInfo.Length > 4) serverPath = fileInfo[4];
 
+=======
+>>>>>>> Stashed changes
                         ListViewItem item = new ListViewItem(fileName);
                         item.SubItems.Add(fileSize);
                         item.SubItems.Add(Path.GetExtension(fileName));
                         item.SubItems.Add(uploadDate);
 
+<<<<<<< Updated upstream
+=======
+                        // Đóng gói thông tin chuẩn vào thuộc tính Tag để hiển thị chính xác lên khung khi Click chọn
+>>>>>>> Stashed changes
                         item.Tag = new string[] { uploader, uploadDate, serverPath };
 
                         lvFiles.Items.Add(item);
@@ -751,6 +779,7 @@ namespace ProjectFileTransferClient.Forms
 
         }
 
+<<<<<<< Updated upstream
         private void btnDeleteList_Click(object sender, EventArgs e)
         {
             IsNetworkBusy = true; // CHẶN ĐẾM ONLINE TẠM THỜI
@@ -915,5 +944,26 @@ namespace ProjectFileTransferClient.Forms
             public string StateText { get; set; } = "Sẵn sàng";
         }
 
+=======
+        private void lblFileSize_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pnlUpload_Paint_1(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void lblIconUpload_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblDownloadCount_Click_1(object sender, EventArgs e)
+        {
+
+        }
+>>>>>>> Stashed changes
     }
 }
