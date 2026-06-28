@@ -71,6 +71,11 @@ namespace ProjectFileTransferServer.Network
                         case "DELETE":
                             ProcessDelete(parts);
                             break;
+                        case "GET_ONLINE":
+                            // Trả về số lượng người online hiện tại cho Client vừa hỏi
+                            writer.WriteLine($"ONLINE_COUNT|{ServerManager.OnlineUsersCount}");
+                            break;
+
                     }
                 }
             }
@@ -104,16 +109,16 @@ namespace ProjectFileTransferServer.Network
                 return;
             }
 
-            // Dùng .Trim() để loại bỏ hoàn toàn khoảng trắng thừa ở đầu/cuối
+            // Chuẩn hóa chuỗi dữ liệu đầu vào loại bỏ khoảng trắng thừa
             string fileToDelete = parts[1].Trim();
             string requestUser = parts[2].Trim();
 
             logCallback?.Invoke($"[DELETE] Client '{requestUser}' đang yêu cầu xóa file '{fileToDelete}'...");
 
-            bool isOwner = false;
+            string currentOwner = "Hệ thống";
             bool fileExistsInMeta = false;
-            List<string> updatedMetadata = new List<string>();
 
+            // BƯỚC 1: Tìm chủ sở hữu đích thực của file trong Metadata (Lấy bản ghi cuối cùng giống GetMetadata)
             try
             {
                 if (File.Exists(metadataFilePath))
@@ -122,59 +127,118 @@ namespace ProjectFileTransferServer.Network
                     foreach (string line in lines)
                     {
                         if (string.IsNullOrWhiteSpace(line)) continue;
-
                         string[] metaParts = line.Split('|');
-
-                        // Kiểm tra tên file KHÔNG phân biệt chữ hoa chữ thường và có .Trim()
                         if (metaParts.Length >= 2 && metaParts[0].Trim().Equals(fileToDelete, StringComparison.OrdinalIgnoreCase))
                         {
                             fileExistsInMeta = true;
-
-                            // Kiểm tra người sở hữu KHÔNG phân biệt chữ hoa chữ thường
-                            if (metaParts[1].Trim().Equals(requestUser, StringComparison.OrdinalIgnoreCase))
-                            {
-                                isOwner = true;
-                                continue; // Khớp chủ sở hữu -> Bỏ qua dòng này (Xóa khỏi danh sách lịch sử)
-                            }
+                            currentOwner = metaParts[1].Trim();
                         }
-
-                        // Giữ lại các dòng khác hoặc dòng của file này nếu sai tên người yêu cầu xóa
-                        updatedMetadata.Add(line);
                     }
-                }
-
-                if (isOwner)
-                {
-                    // Cập nhật lại file txt danh sách
-                    File.WriteAllLines(metadataFilePath, updatedMetadata, Encoding.UTF8);
-
-                    // Xóa file vật lý trên ổ cứng
-                    string physicalPath = Path.Combine(Application.StartupPath, fileToDelete);
-                    if (File.Exists(physicalPath))
-                    {
-                        File.Delete(physicalPath);
-                    }
-
-                    writer.WriteLine("DELETE_SUCCESS");
-                    logCallback?.Invoke($"[DELETE] Thành công: Client '{requestUser}' đã xóa file '{fileToDelete}'");
-                }
-                else if (fileExistsInMeta)
-                {
-                    // Tên file trùng nhưng sai tên người up
-                    writer.WriteLine("DELETE_DENIED");
-                    logCallback?.Invoke($"[SECURITY] Cảnh báo: '{requestUser}' cố gắng xóa file '{fileToDelete}' của người khác!");
-                }
-                else
-                {
-                    // Thực sự không tìm thấy tên file khớp trong danh sách metadata
-                    writer.WriteLine("DELETE_ERROR");
-                    logCallback?.Invoke($"[DELETE] Lỗi: Không tìm thấy file '{fileToDelete}' trong hệ thống metadata.");
                 }
             }
             catch (Exception ex)
             {
+                logCallback?.Invoke($"[DELETE ERROR] Lỗi đọc danh sách phân quyền: {ex.Message}");
+            }
+
+            // BƯỚC 2: Kiểm tra quyền sở hữu nghiêm ngặt (Không phân biệt chữ hoa/thường)
+            bool isOwner = currentOwner.Equals(requestUser, StringComparison.OrdinalIgnoreCase);
+
+            if (!isOwner)
+            {
+                writer.WriteLine("DELETE_DENIED");
+                logCallback?.Invoke($"[SECURITY] Từ chối: '{requestUser}' không có quyền xóa file thuộc sở hữu của '{currentOwner}'!");
+                return;
+            }
+
+            // BƯỚC 3: Tiến hành tìm và xóa file vật lý trên ổ cứng TRƯỚC
+            string physicalPath = "";
+            try
+            {
+                // Quét thông minh tự động toàn bộ thư mục chạy và thư mục con để tìm vị trí chính xác của file
+                string[] foundFiles = Directory.GetFiles(Application.StartupPath, fileToDelete, SearchOption.AllDirectories);
+                if (foundFiles.Length > 0)
+                {
+                    physicalPath = foundFiles[0];
+                }
+            }
+            catch { }
+
+            // Phương án dự phòng nếu quét tự động gặp lỗi quyền truy cập thư mục
+            if (string.IsNullOrEmpty(physicalPath) || !File.Exists(physicalPath))
+            {
+                string[] probablePaths = new string[]
+                {
+            Path.Combine(Application.StartupPath, fileToDelete),
+            Path.Combine(Application.StartupPath, "storage", "uploads", fileToDelete),
+            Path.Combine(Application.StartupPath, "server", "storage", "uploads", fileToDelete)
+                };
+                foreach (string p in probablePaths)
+                {
+                    if (File.Exists(p))
+                    {
+                        physicalPath = p;
+                        break;
+                    }
+                }
+            }
+
+            bool isPhysicalDeleted = false;
+            if (!string.IsNullOrEmpty(physicalPath) && File.Exists(physicalPath))
+            {
+                try
+                {
+                    File.Delete(physicalPath);
+                    isPhysicalDeleted = true;
+                }
+                catch (Exception ex)
+                {
+                    logCallback?.Invoke($"[DELETE ERROR] File đang bị khóa hoặc không thể xóa: {ex.Message}");
+                }
+            }
+            else
+            {
+                // Nếu không thấy file vật lý nhưng vẫn chạy lệnh này, có thể file đã bị xóa thủ công trước đó
+                logCallback?.Invoke($"[DELETE WARNING] File vật lý không tồn tại sẵn trên ổ cứng hệ thống.");
+                isPhysicalDeleted = true;
+            }
+
+            // BƯỚC 4: File vật lý đã sạch, tiến hành xóa dòng lịch sử trong metadata và phản hồi Client
+            if (isPhysicalDeleted)
+            {
+                try
+                {
+                    List<string> updatedMetadata = new List<string>();
+                    if (File.Exists(metadataFilePath))
+                    {
+                        string[] lines = File.ReadAllLines(metadataFilePath, Encoding.UTF8);
+                        foreach (string line in lines)
+                        {
+                            if (string.IsNullOrWhiteSpace(line)) continue;
+                            string[] metaParts = line.Split('|');
+                            // Loại bỏ hoàn toàn mọi dòng lịch sử liên quan đến file này
+                            if (metaParts.Length >= 1 && metaParts[0].Trim().Equals(fileToDelete, StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+                            updatedMetadata.Add(line);
+                        }
+                        File.WriteAllLines(metadataFilePath, updatedMetadata, Encoding.UTF8);
+                    }
+
+                    writer.WriteLine("DELETE_SUCCESS");
+                    logCallback?.Invoke($"[DELETE] Thành công: Client '{requestUser}' đã xóa hoàn toàn file '{fileToDelete}'");
+                }
+                catch (Exception ex)
+                {
+                    writer.WriteLine("DELETE_ERROR");
+                    logCallback?.Invoke($"[DELETE ERROR] Lỗi đồng bộ file danh sách: {ex.Message}");
+                }
+            }
+            else
+            {
                 writer.WriteLine("DELETE_ERROR");
-                logCallback?.Invoke($"[DELETE] Lỗi ngoại lệ khi xóa file: {ex.Message}");
+                logCallback?.Invoke($"[DELETE] Thất bại: Không thể can thiệp xóa file cứng trên Server.");
             }
         }
 
@@ -391,5 +455,21 @@ namespace ProjectFileTransferServer.Network
             catch { }
             return (uploader, uploadDate);
         }
+        // ========================================================================
+        // HÀM BỔ TRỢ ĐỂ SERVER GỬI TIN NHẮN TRỰC TIẾP XUỐNG CLIENT (BROADCAST)
+        // ========================================================================
+        public void SendMessageDirect(string message)
+        {
+            try
+            {
+                if (writer != null)
+                {
+                    writer.WriteLine(message);
+                }
+            }
+            catch { }
+        }
     }
+
+
 }

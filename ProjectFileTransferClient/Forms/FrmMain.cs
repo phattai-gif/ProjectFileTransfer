@@ -104,6 +104,10 @@ namespace ProjectFileTransferClient.Forms
 
             //Cho đồng hồ bắt đầu chạy
             connectTimer.Start();
+            // ---- GỌI HÀM CẬP NHẬT SỐ NGƯỜI ONLINE REAL-TIME: ----
+            StartOnlineCounter();
+        
+
         }
 
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)
@@ -287,6 +291,7 @@ namespace ProjectFileTransferClient.Forms
         // ===========================================================//
         private async void btnUploaddown_Click(object sender, EventArgs e)
         {
+            IsNetworkBusy = true; // CHẶN ĐẾM ONLINE TẠM THỜI
             OpenFileDialog open = new OpenFileDialog();
             open.Title = "Chọn file cần upload lên Server";
             open.Filter = "All files (*.*)|*.*";
@@ -439,6 +444,7 @@ namespace ProjectFileTransferClient.Forms
                 });
 
                 btnUploaddown.Enabled = true;
+                IsNetworkBusy = false; // ĐẾM ONLINE TẠM THỜI MỞ LẠI KHI XONG VIEC
             }
         }
 
@@ -447,6 +453,7 @@ namespace ProjectFileTransferClient.Forms
         // ===========================================================//
         private async void btnDownloadFile_Click(object sender, EventArgs e)
         {
+            IsNetworkBusy = true; // CHẶN ĐẾM ONLINE TẠM THỜI
             if (lvFiles.SelectedItems.Count == 0)
             {
                 MessageBox.Show("Vui lòng chọn một file từ danh sách để tải.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -568,7 +575,7 @@ namespace ProjectFileTransferClient.Forms
 
                             string currentTime = DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy");
                             dgvHistory.Rows.Add(fileName, fileExt, "Download Thành công", currentTime);
-                            SaveHistoryToLocal(); // 🌟 MỚI THÊM: Lưu lịch sử download thành công
+                            SaveHistoryToLocal(); //  Lưu lịch sử download thành công
 
                             MessageBox.Show($"Tải file '{fileName}' thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }));
@@ -578,7 +585,7 @@ namespace ProjectFileTransferClient.Forms
                         this.Invoke(new Action(() =>
                         {
                             dgvHistory.Rows.Add(fileName, fileExt, "Download Thất bại", DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy"));
-                            SaveHistoryToLocal(); // 🌟 MỚI THÊM: Lưu lịch sử download thất bại
+                            SaveHistoryToLocal(); //  Lưu lịch sử download thất bại
                             MessageBox.Show("Server từ chối yêu cầu tải file.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }));
                     }
@@ -590,6 +597,7 @@ namespace ProjectFileTransferClient.Forms
             });
 
             btnDownloadFile.Enabled = true;
+            IsNetworkBusy = false;
         }
 
         private void btnLogout2_Click(object sender, EventArgs e)
@@ -745,6 +753,7 @@ namespace ProjectFileTransferClient.Forms
 
         private void btnDeleteList_Click(object sender, EventArgs e)
         {
+            IsNetworkBusy = true; // CHẶN ĐẾM ONLINE TẠM THỜI
             if (lvFiles.SelectedItems.Count == 0)
             {
                 MessageBox.Show("Vui lòng chọn một file từ danh sách để xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -754,41 +763,56 @@ namespace ProjectFileTransferClient.Forms
             string fileName = lvFiles.SelectedItems[0].Text;
 
             DialogResult dialogResult = MessageBox.Show($"Bạn có chắc chắn muốn xóa file '{fileName}' khỏi Server không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
             if (dialogResult == DialogResult.Yes)
             {
                 try
                 {
-                    // 1. Gửi lệnh xóa kèm TÊN NGƯỜI DÙNG lên Server
+                    // Lấy stream mạng và dọn sạch bộ nhớ đệm trước khi gửi lệnh (Tránh cướp/lệch gói tin giống Upload/Download)
+                    var stream = clientManager.GetStream();
+                    if (stream != null)
+                    {
+                        while (stream.DataAvailable)
+                        {
+                            clientManager.ReceiveMessage();
+                        }
+                    }
+
+                    //  Gửi lệnh xóa kèm TÊN NGƯỜI DÙNG lên Server
                     string cmd = $"DELETE{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{FrmConnect.GlobalUsername}";
                     clientManager.SendMessage(cmd);
 
-                    // 2. Nhận kết quả từ Server
+                    //  Nhận kết quả từ Server
                     string response = clientManager.ReceiveMessage();
-
                     if (!string.IsNullOrEmpty(response))
                     {
-                        if (response.Contains("DELETE_SUCCESS"))
+                        // Chuẩn hóa chuỗi nhận về xóa khoảng trắng thừa
+                        response = response.Trim();
+
+                        if (response.Contains("DELETE_SUCCESS") || response.IndexOf("SUCCESS", StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            // Xóa thành công
+                            // Xóa thành công trên giao diện Client
                             lvFiles.SelectedItems[0].Remove();
                             for (int i = allFiles.Count - 1; i >= 0; i--)
                             {
-                                if (allFiles[i].Text == fileName) { allFiles.RemoveAt(i); break; }
+                                if (allFiles[i].Text == fileName)
+                                {
+                                    allFiles.RemoveAt(i);
+                                    break;
+                                }
                             }
                             lblTotalFiles.Text = lvFiles.Items.Count.ToString();
                             ClearFileDetails();
                             MessageBox.Show("Đã xóa file thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
-                        else if (response.Contains("DENIED"))
+                        else if (response.Contains("DENIED") || response.IndexOf("DENIED", StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             // Bị Server từ chối vì không phải chủ sở hữu
-                            MessageBox.Show($"Bạn không có quyền xóa file này!\nChỉ người đã Upload ({fileName}) mới được phép xóa.", "Từ chối quyền", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show($"Bạn không có quyền xóa file này!\nChỉ người đã Upload mới được phép xóa.", "Từ chối quyền", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         else
                         {
-                            // Lỗi khác (file không tồn tại, v.v...)
-                            MessageBox.Show("Xóa file thất bại! File có thể đã bị xóa hoặc không tồn tại trên Server.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            // Lỗi hệ thống khác từ Server phát ra
+                            MessageBox.Show($"Xóa file thất bại! Phản hồi từ Server: {response}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -796,6 +820,7 @@ namespace ProjectFileTransferClient.Forms
                 {
                     MessageBox.Show($"Lỗi kết nối khi gửi lệnh xóa: {ex.Message}", "Lỗi mạng", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+                IsNetworkBusy = false; // MỞ LẠI KHI XONG
             }
         }
 
@@ -839,6 +864,44 @@ namespace ProjectFileTransferClient.Forms
                 }
             }
         }
+        // Biến cờ hiệu chống đụng độ luồng mạng khi đang Upload/Download/Delete
+        public static bool IsNetworkBusy = false;
+
+        private async void StartOnlineCounter()
+        {
+            while (this.IsHandleCreated)
+            {
+                await Task.Delay(2000); // Cứ 2 giây tự động hỏi Server 1 lần
+
+                // Nếu mạng đang bận tải/xóa file thì bỏ qua lượt này để không gây lỗi luồng
+                if (IsNetworkBusy) continue;
+
+                try
+                {
+                    IsNetworkBusy = true; // Khóa luồng
+                    clientManager.SendMessage("GET_ONLINE");
+                    string response = clientManager.ReceiveMessage();
+
+                    if (!string.IsNullOrEmpty(response) && response.StartsWith("ONLINE_COUNT"))
+                    {
+                        // Cắt lấy số lượng người online
+                        string[] parts = response.Split(new char[] { '|', '#' });
+                        if (parts.Length > 1)
+                        {
+                            string countStr = parts[1].Trim();
+                            this.Invoke((MethodInvoker)delegate {
+                                lblOnlineCount.Text = countStr; // Cập nhật lên UI
+                            });
+                        }
+                    }
+                }
+                catch { }
+                finally
+                {
+                    IsNetworkBusy = false; // Mở lại luồng
+                }
+            }
+        }
         // Lớp lưu trạng thái (Được đưa ra ngoài class FrmMain để tránh lỗi UI Designer)
         public class TransferProgressState
         {
@@ -851,5 +914,6 @@ namespace ProjectFileTransferClient.Forms
             public string RemainTimeText { get; set; } = "00:00:00";
             public string StateText { get; set; } = "Sẵn sàng";
         }
+
     }
 }

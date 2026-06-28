@@ -16,6 +16,12 @@ namespace ProjectFileTransferServer.Network
         private List<string> connectedClients = new List<string>();
         private Action<List<string>> onClientListChanged; // Callback cập nhật UI
 
+        // Biến static để lưu tổng số người online, các file khác đều đọc được
+        public static int OnlineUsersCount = 0;
+
+        ////Thêm danh sách ActiveHandlers
+        //public static List<ClientHandler> ActiveHandlers = new List<ClientHandler>();
+//=========================================================================================================
         // Thêm tham số nhận callback danh sách client vào hàm StartServer
         public void StartServer(Action<string> logCallback, Action<List<string>> clientListCallback)
         {
@@ -43,13 +49,17 @@ namespace ProjectFileTransferServer.Network
                     lock (connectedClients)
                     {
                         connectedClients.Add(clientInfo);
+
+                        // CẬP NHẬT: Tăng số lượng người online thực tế lên 1
+                        OnlineUsersCount++;
+
                         // Kích hoạt callback đẩy danh sách mới về cho UI cập nhật
                         onClientListChanged?.Invoke(new List<string>(connectedClients));
                     }
 
                     onLogReceived?.Invoke($"[CONNECT] Đã chấp nhận kết nối từ: {clientInfo}");
 
-                    // Truyền thêm hành động xóa client khi client ngắt kết nối vào Handler
+                    // Khởi tạo Handler bình thường (Không cần truyền handler hay ActiveHandlers nữa)
                     ClientHandler handler = new ClientHandler(client, onLogReceived, () => RemoveClient(clientInfo));
 
                     Task.Run(() => handler.HandleClient());
@@ -66,9 +76,30 @@ namespace ProjectFileTransferServer.Network
                 if (connectedClients.Contains(clientInfo))
                 {
                     connectedClients.Remove(clientInfo);
-                    onClientListChanged?.Invoke(new List<string>(connectedClients));
+
+                    // CẬP NHẬT: Giảm số lượng người online đi 1
+                    if (OnlineUsersCount > 0)
+                    {
+                        OnlineUsersCount--;
+                    }
                 }
             }
+            // Cập nhật lại giao diện danh sách IP bên giao diện Server
+            onClientListChanged?.Invoke(new List<string>(connectedClients));
+        }
+        // --- XÓA CLIENT KHỎI DANH SÁCH KHI ĐỨT KẾT NỐI ---
+        //cap nhap Thêm tham số ClientHandler handler
+        private void RemoveClient(string clientInfo, ClientHandler handler)
+        {
+            lock (connectedClients)
+            {
+                if (connectedClients.Contains(clientInfo))
+                {
+                    connectedClients.Remove(clientInfo);
+                }
+            }
+            onClientListChanged?.Invoke(new List<string>(connectedClients));
+ 
         }
 
         public void StopServer()
