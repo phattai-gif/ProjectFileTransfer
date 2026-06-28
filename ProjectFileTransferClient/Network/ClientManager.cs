@@ -49,16 +49,16 @@ namespace ProjectFileTransferClient.Network
             return client?.GetStream();
         }
 
-        public bool SendMessage(string message)
+        public void SendMessage(string message)
         {
             try
             {
                 writer?.WriteLine(message);
-                return true;
+                writer?.Flush();
             }
-            catch
+            catch (Exception ex) 
             {
-                return false;
+                
             }
         }
         //=============================================

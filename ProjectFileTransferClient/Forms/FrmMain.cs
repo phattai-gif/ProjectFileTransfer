@@ -118,107 +118,117 @@ namespace ProjectFileTransferClient.Forms
         // HÀM LOADFILELIST //
         private void LoadFileList()
         {
-            try
+            // Đẩy toàn bộ tác vụ mạng vào luồng phụ độc lập để giải phóng luồng UI chính
+            Task.Run(() =>
             {
-                if (this.IsHandleCreated)
+                try
                 {
-                    this.Invoke(new Action(() => ClearFileDetails()));
-                }
-
-                clientManager.SendMessage(Protocol.LIST);
-                string? response = clientManager.ReceiveMessage();
-                if (string.IsNullOrEmpty(response)) return;
-
-                string[] parts = response.Split(Protocol.DELIMITER);
-
-                if (parts.Length > 0 && parts[0] == Protocol.LIST_SUCCESS)
-                {
-                    lvFiles.Items.Clear();
-                    allFiles.Clear();
-
-                    AutoCompleteStringCollection autoCompleteList = new AutoCompleteStringCollection();
-
-                    for (int i = 1; i < parts.Length; i++)
+                    // Xóa sạch dữ liệu cũ hiển thị ở khung thông tin một cách an toàn
+                    if (this.IsHandleCreated)
                     {
-                        if (string.IsNullOrEmpty(parts[i])) continue;
-
-                        // Server trả về cấu trúc: fileInfo[0]=Name, fileInfo[1]=Size, fileInfo[2]=Uploader, fileInfo[3]=Date
-                        string[] fileInfo = parts[i].Split('#');
-                        string fileName = fileInfo[0];
-                        string fileSize = "0 KB";
-
-                        // 1. Lấy thông tin Người upload thực tế bằng câu lệnh if-else
-
-                        string uploader = "Hệ thống";
-                        if (fileInfo.Length > 2)
-                        {
-                            uploader = fileInfo[2];
-                        }
-
-                        // 2. Lấy thông tin Ngày upload thực tế bằng câu lệnh if-else
-                        string uploadDate = "";
-                        if (fileInfo.Length > 3)
-                        {
-                            uploadDate = fileInfo[3];
-                        }
-                        else
-                        {
-                            uploadDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-                        }
-
-                        string serverPath = $"/server/storage/uploads/{fileName}";
-
-                        // 3. Tính toán kích thước hiển thị trực quan
-                        if (fileInfo.Length > 1)
-                        {
-                            long size = long.Parse(fileInfo[1]);
-                            if (size < 1024) fileSize = size + " B";
-                            else if (size < 1024 * 1024) fileSize = (size / 1024.0).ToString("F2") + " KB";
-                            else fileSize = (size / 1024.0 / 1024.0).ToString("F2") + " MB";
-                        }
-
-
-                        if (fileInfo.Length > 2) uploader = fileInfo[2];
-                        if (fileInfo.Length > 3) uploadDate = fileInfo[3];
-                        if (fileInfo.Length > 4) serverPath = fileInfo[4];
-
-                        ListViewItem item = new ListViewItem(fileName);
-                        item.SubItems.Add(fileSize);
-                        item.SubItems.Add(Path.GetExtension(fileName));
-                        item.SubItems.Add(uploadDate);
-
-                        // Đóng gói thông tin chuẩn vào thuộc tính Tag để hiển thị chính xác lên khung khi Click chọn
-
-                        item.Tag = new string[] { uploader, uploadDate, serverPath };
-
-                        lvFiles.Items.Add(item);
-                        allFiles.Add((ListViewItem)item.Clone());
-
-                        autoCompleteList.Add(fileName);
+                        this.Invoke(new Action(() => ClearFileDetails()));
                     }
 
+                    // Gửi lệnh LIST sang Server để yêu cầu danh sách file
+                    clientManager.SendMessage(Protocol.LIST);
+
+                    // Nhận chuỗi phản hồi từ Server (Đợi ở luồng phụ nên Form không bị treo)
+                    string? response = clientManager.ReceiveMessage();
+                    if (string.IsNullOrEmpty(response)) return;
+
+                    // Tách dữ liệu dựa theo ký tự phân cách
+                    string[] parts = response.Split(Protocol.DELIMITER);
+
+                    // Kiểm tra Server trả về thành công
+                    if (parts.Length > 0 && parts[0] == Protocol.LIST_SUCCESS)
+                    {
+                        // Khởi tạo danh sách AutoComplete (xử lý trên luồng phụ trước)
+                        AutoCompleteStringCollection autoCompleteList = new AutoCompleteStringCollection();
+                        List<ListViewItem> currentItems = new List<ListViewItem>();
+                        List<ListViewItem> cloneItems = new List<ListViewItem>();
+
+                        // Bắt đầu đọc từng file từ Server
+                        for (int i = 1; i < parts.Length; i++)
+                        {
+                            if (string.IsNullOrEmpty(parts[i])) continue;
+
+                            // Cấu trúc chuẩn từ Server: FileName#Size#Uploader#UploadDate#ServerPath
+                            string[] fileInfo = parts[i].Split('#');
+                            string fileName = fileInfo[0];
+                            string fileSize = "0 KB";
+
+                            string uploader = "Hệ thống";
+                            if (fileInfo.Length > 2) uploader = fileInfo[2];
+
+                            string uploadDate = "";
+                            if (fileInfo.Length > 3)
+                            {
+                                uploadDate = fileInfo[3];
+                            }
+                            else
+                            {
+                                uploadDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                            }
+
+                            string serverPath = fileInfo.Length > 4 ? fileInfo[4] : $"/server/storage/uploads/{fileName}";
+
+                            // Tính toán kích thước hiển thị trực quan
+                            if (fileInfo.Length > 1)
+                            {
+                                long size = long.Parse(fileInfo[1]);
+                                if (size < 1024) fileSize = size + " B";
+                                else if (size < 1024 * 1024) fileSize = (size / 1024.0).ToString("F2") + " KB";
+                                else fileSize = (size / 1024.0 / 1024.0).ToString("F2") + " MB";
+                            }
+
+                            ListViewItem item = new ListViewItem(fileName);
+                            item.SubItems.Add(fileSize);
+                            item.SubItems.Add(Path.GetExtension(fileName));
+                            item.SubItems.Add(uploadDate);
+
+                            // Đóng gói thông tin chuẩn vào thuộc tính Tag
+                            item.Tag = new string[] { uploader, uploadDate, serverPath };
+
+                            currentItems.Add(item);
+                            cloneItems.Add((ListViewItem)item.Clone());
+                            autoCompleteList.Add(fileName);
+                        }
+
+                        // Đồng bộ và gán toàn bộ dữ liệu lên các UI Control thông qua Invoke
+                        if (this.IsHandleCreated)
+                        {
+                            this.Invoke(new Action(() =>
+                            {
+                                // Cập nhật danh sách hiển thị
+                                lvFiles.Items.Clear();
+                                allFiles.Clear();
+
+                                lvFiles.Items.AddRange(currentItems.ToArray());
+                                allFiles.AddRange(cloneItems);
+
+                                // Cập nhật gợi ý tìm kiếm
+                                txtSearch.AutoCompleteCustomSource = autoCompleteList;
+
+                                // Cập nhật các ô thống kê giao diện
+                                lblTotalFiles.Text = lvFiles.Items.Count.ToString();
+                                lblUploadCount.Text = uploadCount.ToString();
+                                lblDownloadCount.Text = downloadCount.ToString();
+                                lblOnlineCount.Text = onlineUsersCount.ToString();
+                            }));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
                     if (this.IsHandleCreated)
                     {
                         this.Invoke(new Action(() =>
                         {
-                            txtSearch.AutoCompleteCustomSource = autoCompleteList;
+                            MessageBox.Show($"Lỗi nạp danh sách file: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }));
                     }
-                    else
-                    {
-                        txtSearch.AutoCompleteCustomSource = autoCompleteList;
-                    }
-
-                    lblTotalFiles.Text = lvFiles.Items.Count.ToString();
-                    lblUploadCount.Text = uploadCount.ToString();
-                    lblDownloadCount.Text = downloadCount.ToString();
-                    lblOnlineCount.Text = onlineUsersCount.ToString();
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi nạp danh sách file: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            });
         }
 
         private void lvFiles_SelectedIndexChanged(object sender, EventArgs e)
