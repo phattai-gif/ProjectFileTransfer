@@ -41,9 +41,7 @@
             lblSidebarIP = new Label();
             lblSidebarName = new Label();
             lblSidebarStatus = new Label();
-            btnSettings = new Button();
             picLogo = new PictureBox();
-            btnNotify = new Button();
             btnRefresh = new Button();
             btnHistory = new Button();
             btnFileList = new Button();
@@ -146,9 +144,7 @@
             pnlSidebar.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pnlSidebar.BackColor = Color.FromArgb(11, 31, 58);
             pnlSidebar.Controls.Add(pnlConnection);
-            pnlSidebar.Controls.Add(btnSettings);
             pnlSidebar.Controls.Add(picLogo);
-            pnlSidebar.Controls.Add(btnNotify);
             pnlSidebar.Controls.Add(btnRefresh);
             pnlSidebar.Controls.Add(btnHistory);
             pnlSidebar.Controls.Add(btnFileList);
@@ -176,7 +172,7 @@
             pnlConnection.Controls.Add(lblSidebarName);
             pnlConnection.Controls.Add(lblSidebarStatus);
             pnlConnection.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            pnlConnection.Location = new Point(3, 541);
+            pnlConnection.Location = new Point(3, 516);
             pnlConnection.Name = "pnlConnection";
             pnlConnection.Size = new Size(241, 262);
             pnlConnection.TabIndex = 0;
@@ -291,19 +287,6 @@
             lblSidebarStatus.TabIndex = 0;
             lblSidebarStatus.Text = "🔴 Trạng Thái ";
             // 
-            // btnSettings
-            // 
-            btnSettings.BackColor = Color.Transparent;
-            btnSettings.FlatAppearance.BorderSize = 0;
-            btnSettings.FlatStyle = FlatStyle.Flat;
-            btnSettings.ForeColor = SystemColors.Control;
-            btnSettings.Location = new Point(-27, 451);
-            btnSettings.Name = "btnSettings";
-            btnSettings.Size = new Size(241, 50);
-            btnSettings.TabIndex = 10;
-            btnSettings.Text = "⚙ Settings";
-            btnSettings.UseVisualStyleBackColor = false;
-            // 
             // picLogo
             // 
             picLogo.Image = Properties.Resources.Screenshot_2026_06_20_012052;
@@ -314,26 +297,13 @@
             picLogo.TabIndex = 0;
             picLogo.TabStop = false;
             // 
-            // btnNotify
-            // 
-            btnNotify.BackColor = Color.Transparent;
-            btnNotify.FlatAppearance.BorderSize = 0;
-            btnNotify.FlatStyle = FlatStyle.Flat;
-            btnNotify.ForeColor = SystemColors.Control;
-            btnNotify.Location = new Point(-16, 497);
-            btnNotify.Name = "btnNotify";
-            btnNotify.Size = new Size(241, 50);
-            btnNotify.TabIndex = 8;
-            btnNotify.Text = "🔔 Thông báo";
-            btnNotify.UseVisualStyleBackColor = false;
-            // 
             // btnRefresh
             // 
             btnRefresh.BackColor = Color.Transparent;
             btnRefresh.FlatAppearance.BorderSize = 0;
             btnRefresh.FlatStyle = FlatStyle.Flat;
             btnRefresh.ForeColor = SystemColors.Control;
-            btnRefresh.Location = new Point(-28, 363);
+            btnRefresh.Location = new Point(-28, 380);
             btnRefresh.Name = "btnRefresh";
             btnRefresh.Size = new Size(241, 50);
             btnRefresh.TabIndex = 7;
@@ -346,7 +316,7 @@
             btnHistory.FlatAppearance.BorderSize = 0;
             btnHistory.FlatStyle = FlatStyle.Flat;
             btnHistory.ForeColor = SystemColors.Control;
-            btnHistory.Location = new Point(9, 407);
+            btnHistory.Location = new Point(9, 428);
             btnHistory.Name = "btnHistory";
             btnHistory.Size = new Size(241, 50);
             btnHistory.TabIndex = 6;
@@ -359,7 +329,7 @@
             btnFileList.FlatAppearance.BorderSize = 0;
             btnFileList.FlatStyle = FlatStyle.Flat;
             btnFileList.ForeColor = SystemColors.Control;
-            btnFileList.Location = new Point(2, 315);
+            btnFileList.Location = new Point(2, 332);
             btnFileList.Name = "btnFileList";
             btnFileList.Size = new Size(234, 50);
             btnFileList.TabIndex = 5;
@@ -372,7 +342,7 @@
             btnDownload.FlatAppearance.BorderSize = 0;
             btnDownload.FlatStyle = FlatStyle.Flat;
             btnDownload.ForeColor = SystemColors.Control;
-            btnDownload.Location = new Point(-16, 268);
+            btnDownload.Location = new Point(-16, 281);
             btnDownload.Name = "btnDownload";
             btnDownload.Size = new Size(241, 50);
             btnDownload.TabIndex = 4;
@@ -385,7 +355,7 @@
             btnUpload.FlatAppearance.BorderSize = 0;
             btnUpload.FlatStyle = FlatStyle.Flat;
             btnUpload.ForeColor = SystemColors.Control;
-            btnUpload.Location = new Point(-29, 222);
+            btnUpload.Location = new Point(-29, 228);
             btnUpload.Name = "btnUpload";
             btnUpload.Size = new Size(241, 50);
             btnUpload.TabIndex = 3;
@@ -398,7 +368,7 @@
             btnHome.FlatAppearance.BorderSize = 0;
             btnHome.FlatStyle = FlatStyle.Flat;
             btnHome.ForeColor = SystemColors.Control;
-            btnHome.Location = new Point(-17, 175);
+            btnHome.Location = new Point(-17, 178);
             btnHome.Name = "btnHome";
             btnHome.Size = new Size(241, 50);
             btnHome.TabIndex = 2;
@@ -439,7 +409,7 @@
             pnlTopBar.Controls.Add(btnUploaddown);
             pnlTopBar.Location = new Point(250, 0);
             pnlTopBar.Name = "pnlTopBar";
-            pnlTopBar.Size = new Size(1302, 80);
+            pnlTopBar.Size = new Size(1329, 80);
             pnlTopBar.TabIndex = 1;
             // 
             // btnDeleteList
@@ -476,7 +446,7 @@
             txtSearch.Multiline = true;
             txtSearch.Name = "txtSearch";
             txtSearch.PlaceholderText = "Tìm kiếm file...";
-            txtSearch.Size = new Size(368, 48);
+            txtSearch.Size = new Size(395, 48);
             txtSearch.TabIndex = 3;
             txtSearch.TextChanged += txtSearch_TextChanged;
             // 
@@ -512,7 +482,7 @@
             btnLogout2.BackColor = Color.Red;
             btnLogout2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnLogout2.ForeColor = SystemColors.ButtonHighlight;
-            btnLogout2.Location = new Point(1398, 9);
+            btnLogout2.Location = new Point(1403, 9);
             btnLogout2.Name = "btnLogout2";
             btnLogout2.Size = new Size(169, 62);
             btnLogout2.TabIndex = 4;
@@ -544,7 +514,7 @@
             btnDeleteHistory.FlatStyle = FlatStyle.Flat;
             btnDeleteHistory.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnDeleteHistory.ForeColor = Color.White;
-            btnDeleteHistory.Location = new Point(1185, 723);
+            btnDeleteHistory.Location = new Point(1185, 717);
             btnDeleteHistory.Name = "btnDeleteHistory";
             btnDeleteHistory.Size = new Size(129, 43);
             btnDeleteHistory.TabIndex = 3;
@@ -560,7 +530,7 @@
             grpHistory.ForeColor = Color.RoyalBlue;
             grpHistory.Location = new Point(722, 427);
             grpHistory.Name = "grpHistory";
-            grpHistory.Size = new Size(554, 253);
+            grpHistory.Size = new Size(595, 284);
             grpHistory.TabIndex = 2;
             grpHistory.TabStop = false;
             grpHistory.Text = "LỊCH SỬ TRUYỀN FILE GẦN ĐÂY";
@@ -581,7 +551,7 @@
             dgvHistory.RowHeadersVisible = false;
             dgvHistory.RowHeadersWidth = 62;
             dgvHistory.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvHistory.Size = new Size(548, 223);
+            dgvHistory.Size = new Size(589, 254);
             dgvHistory.TabIndex = 0;
             // 
             // colHistoryFile
@@ -628,7 +598,7 @@
             grpStatistics.ForeColor = Color.RoyalBlue;
             grpStatistics.Location = new Point(722, 242);
             grpStatistics.Name = "grpStatistics";
-            grpStatistics.Size = new Size(551, 179);
+            grpStatistics.Size = new Size(592, 179);
             grpStatistics.TabIndex = 2;
             grpStatistics.TabStop = false;
             grpStatistics.Text = "THỐNG KÊ";
@@ -837,7 +807,7 @@
             grpTransfer.ForeColor = Color.RoyalBlue;
             grpTransfer.Location = new Point(19, 417);
             grpTransfer.Name = "grpTransfer";
-            grpTransfer.Size = new Size(701, 272);
+            grpTransfer.Size = new Size(701, 294);
             grpTransfer.TabIndex = 2;
             grpTransfer.TabStop = false;
             grpTransfer.Text = "TIẾN TRÌNH TRUYỀN FILE";
@@ -850,7 +820,7 @@
             pnlRemainTime.Controls.Add(lblRemainTitle);
             pnlRemainTime.Location = new Point(358, 211);
             pnlRemainTime.Name = "pnlRemainTime";
-            pnlRemainTime.Size = new Size(157, 68);
+            pnlRemainTime.Size = new Size(157, 72);
             pnlRemainTime.TabIndex = 11;
             // 
             // lblRemainTime
@@ -882,7 +852,7 @@
             pnlState.Controls.Add(lblStateTitle);
             pnlState.Location = new Point(522, 210);
             pnlState.Name = "pnlState";
-            pnlState.Size = new Size(163, 68);
+            pnlState.Size = new Size(163, 73);
             pnlState.TabIndex = 10;
             // 
             // lblState
@@ -915,7 +885,7 @@
             pnlElapsed.Controls.Add(lblElapsedTitle);
             pnlElapsed.Location = new Point(194, 211);
             pnlElapsed.Name = "pnlElapsed";
-            pnlElapsed.Size = new Size(157, 68);
+            pnlElapsed.Size = new Size(157, 72);
             pnlElapsed.TabIndex = 9;
             // 
             // lblElapsed
@@ -946,9 +916,9 @@
             pnlSpeed.BackColor = Color.WhiteSmoke;
             pnlSpeed.Controls.Add(lblSpeed);
             pnlSpeed.Controls.Add(lblSpeedTitle);
-            pnlSpeed.Location = new Point(20, 212);
+            pnlSpeed.Location = new Point(20, 211);
             pnlSpeed.Name = "pnlSpeed";
-            pnlSpeed.Size = new Size(167, 68);
+            pnlSpeed.Size = new Size(167, 72);
             pnlSpeed.TabIndex = 8;
             // 
             // lblSpeed
@@ -1000,7 +970,7 @@
             lblPercent.AutoSize = true;
             lblPercent.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblPercent.ForeColor = SystemColors.ActiveCaptionText;
-            lblPercent.Location = new Point(640, 98);
+            lblPercent.Location = new Point(647, 103);
             lblPercent.Name = "lblPercent";
             lblPercent.Size = new Size(41, 28);
             lblPercent.TabIndex = 5;
@@ -1011,7 +981,7 @@
             progressTransfer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             progressTransfer.Location = new Point(146, 101);
             progressTransfer.Name = "progressTransfer";
-            progressTransfer.Size = new Size(488, 25);
+            progressTransfer.Size = new Size(483, 34);
             progressTransfer.TabIndex = 4;
             // 
             // lblTransferStatus
@@ -1060,7 +1030,7 @@
             grpFileInfo.ForeColor = Color.RoyalBlue;
             grpFileInfo.Location = new Point(722, 10);
             grpFileInfo.Name = "grpFileInfo";
-            grpFileInfo.Size = new Size(554, 228);
+            grpFileInfo.Size = new Size(595, 228);
             grpFileInfo.TabIndex = 1;
             grpFileInfo.TabStop = false;
             grpFileInfo.Text = "THÔNG TIN FILE ĐƯỢC CHỌN";
@@ -1249,9 +1219,7 @@
         private Label lblTitle;
         private Label lblTitle1;
         private Button btnHome;
-        private Button btnNotify;
         private PictureBox picLogo;
-        private Button btnSettings;
         private Panel pnlConnection;
         private TextBox txtSearch;
         private Button btnLogout2;
