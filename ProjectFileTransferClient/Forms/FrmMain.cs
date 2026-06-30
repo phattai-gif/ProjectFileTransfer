@@ -38,6 +38,8 @@ namespace ProjectFileTransferClient.Forms
             InitializeComponent();
             clientManager = manager;
             frmConnect = connectForm;
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
         }
 
         //Hàm bổ trợ tính SHA256 của file để kiểm tra tính toàn vẹn
@@ -106,7 +108,7 @@ namespace ProjectFileTransferClient.Forms
             connectTimer.Start();
             // ---- GỌI HÀM CẬP NHẬT SỐ NGƯỜI ONLINE REAL-TIME: ----
             StartOnlineCounter();
-        
+
 
         }
 
@@ -239,6 +241,22 @@ namespace ProjectFileTransferClient.Forms
                 return;
             }
 
+            if (lvFiles.SelectedItems.Count > 0)
+            {
+                string selectedFileName = lvFiles.SelectedItems[0].Text;
+                string iconKey = GetIconKey(selectedFileName);
+
+                // Lấy ảnh an toàn từ Resource của dự án
+                object obj = Properties.Resources.ResourceManager.GetObject(iconKey);
+
+                if (obj != null && obj is Image)
+                {
+                    // Gán trực tiếp obj sau khi ép kiểu sang Image
+                    pictureBox1.Image = (Image)obj;
+                    pictureBox2.Image = (Image)obj;
+                }
+            }
+
             ListViewItem item = lvFiles.SelectedItems[0];
             string fileName = item.Text;
             string fileSize = item.SubItems[1].Text;
@@ -261,6 +279,8 @@ namespace ProjectFileTransferClient.Forms
             lblUploadTime.Text = $"Người upload :   {uploader}";
             lblUploadDate.Text = $"Ngày upload :   {uploadDate}";
             lblPath.Text = $"Đường dẫn :   {serverPath}";
+
+
         }
 
         private void ClearFileDetails()
@@ -338,6 +358,17 @@ namespace ProjectFileTransferClient.Forms
 
                         FileInfo fileInfo = new FileInfo(localFilePath);
                         long fileSize = fileInfo.Length;
+
+                        this.Invoke(new Action(() => {
+                            string pureFileName = Path.GetFileName(fileName);
+                            string iconKey = GetIconKey(pureFileName);
+                            object obj = Properties.Resources.ResourceManager.GetObject(iconKey);
+                            if (obj != null && obj is Image)
+                            {
+                                pictureBox1.Image = (Image)obj;
+                                pictureBox2.Image = (Image)obj;
+                            }
+                        }));
 
                         string cmd = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}{Protocol.DELIMITER}{clientHash}{Protocol.DELIMITER}{FrmConnect.GlobalUsername}";
                         clientManager.SendMessage(cmd);
@@ -502,6 +533,17 @@ namespace ProjectFileTransferClient.Forms
                     if (stream == null) return;
 
                     while (stream.DataAvailable) { clientManager.ReceiveMessage(); }
+
+                    this.Invoke(new Action(() => {
+                        string pureFileName = Path.GetFileName(fileName); 
+                        string iconKey = GetIconKey(pureFileName);
+                        object obj = Properties.Resources.ResourceManager.GetObject(iconKey);
+                        if (obj != null && obj is Image)
+                        {
+                            pictureBox1.Image = (Image)obj;
+                            pictureBox2.Image = (Image)obj;
+                        }
+                    }));
 
                     string cmd = $"{Protocol.DOWNLOAD}{Protocol.DELIMITER}{fileName}";
                     clientManager.SendMessage(cmd);
@@ -879,7 +921,8 @@ namespace ProjectFileTransferClient.Forms
                         if (parts.Length > 1)
                         {
                             string countStr = parts[1].Trim();
-                            this.Invoke((MethodInvoker)delegate {
+                            this.Invoke((MethodInvoker)delegate
+                            {
                                 lblOnlineCount.Text = countStr; // Cập nhật lên UI
                             });
                         }
@@ -903,6 +946,23 @@ namespace ProjectFileTransferClient.Forms
             public string ElapsedText { get; set; } = "00:00:00";
             public string RemainTimeText { get; set; } = "00:00:00";
             public string StateText { get; set; } = "Sẵn sàng";
+        }
+
+        private string GetIconKey(string fileName)
+        {
+            string ext = Path.GetExtension(fileName).ToLower();
+
+            // Phân loại nhóm mở rộng về 7 định danh key chuẩn trong Resource
+            if (ext == ".xls" || ext == ".xlsx" || ext == ".csv") return "xlsx";
+            if (ext == ".doc" || ext == ".docx") return "docx";
+            if (ext == ".zip" || ext == ".rar" || ext == ".7z") return "zip";
+            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".bmp") return "png";
+            if (ext == ".pdf") return "pdf";
+            if (ext == ".txt" || ext == ".log" || ext == ".ini") return "txt";
+            if (ext == ".bin" || ext == ".dat") return "bin"; 
+
+            // Mặc định trả về định dạng text nếu gặp đuôi lạ khác
+            return "txt";
         }
     }
 }

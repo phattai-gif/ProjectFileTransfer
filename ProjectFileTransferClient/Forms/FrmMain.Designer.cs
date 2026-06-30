@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             pnlSidebar = new Panel();
             pnlConnection = new Panel();
             lblSidebarTimeConnect = new Label();
@@ -83,6 +82,7 @@
             lblTextFile = new Label();
             lblIconFile = new Label();
             grpTransfer = new GroupBox();
+            pictureBox2 = new PictureBox();
             pnlRemainTime = new Panel();
             lblRemainTime = new Label();
             lblRemainTitle = new Label();
@@ -101,7 +101,6 @@
             progressTransfer = new ProgressBar();
             lblTransferStatus = new Label();
             lblTransferFileName = new Label();
-            pictureBox2 = new PictureBox();
             grpFileInfo = new GroupBox();
             lblPath = new Label();
             lblUploadTime = new Label();
@@ -129,11 +128,11 @@
             pnlDownload.SuspendLayout();
             pnlTotalFile.SuspendLayout();
             grpTransfer.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             pnlRemainTime.SuspendLayout();
             pnlState.SuspendLayout();
             pnlElapsed.SuspendLayout();
             pnlSpeed.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             grpFileInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             grpFileList.SuspendLayout();
@@ -792,6 +791,7 @@
             // 
             grpTransfer.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             grpTransfer.BackColor = Color.Transparent;
+            grpTransfer.Controls.Add(pictureBox2);
             grpTransfer.Controls.Add(pnlRemainTime);
             grpTransfer.Controls.Add(pnlState);
             grpTransfer.Controls.Add(pnlElapsed);
@@ -802,7 +802,6 @@
             grpTransfer.Controls.Add(progressTransfer);
             grpTransfer.Controls.Add(lblTransferStatus);
             grpTransfer.Controls.Add(lblTransferFileName);
-            grpTransfer.Controls.Add(pictureBox2);
             grpTransfer.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             grpTransfer.ForeColor = Color.RoyalBlue;
             grpTransfer.Location = new Point(19, 417);
@@ -811,6 +810,17 @@
             grpTransfer.TabIndex = 2;
             grpTransfer.TabStop = false;
             grpTransfer.Text = "TIẾN TRÌNH TRUYỀN FILE";
+            // 
+            // pictureBox2
+            // 
+            pictureBox2.Image = Properties.Resources.docx;
+            pictureBox2.InitialImage = Properties.Resources.bin;
+            pictureBox2.Location = new Point(20, 65);
+            pictureBox2.Name = "pictureBox2";
+            pictureBox2.Size = new Size(103, 112);
+            pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox2.TabIndex = 1;
+            pictureBox2.TabStop = false;
             // 
             // pnlRemainTime
             // 
@@ -981,7 +991,7 @@
             progressTransfer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             progressTransfer.Location = new Point(146, 101);
             progressTransfer.Name = "progressTransfer";
-            progressTransfer.Size = new Size(483, 34);
+            progressTransfer.Size = new Size(470, 34);
             progressTransfer.TabIndex = 4;
             // 
             // lblTransferStatus
@@ -1001,20 +1011,9 @@
             lblTransferFileName.ForeColor = SystemColors.ActiveCaptionText;
             lblTransferFileName.Location = new Point(143, 63);
             lblTransferFileName.Name = "lblTransferFileName";
-            lblTransferFileName.Size = new Size(222, 30);
+            lblTransferFileName.Size = new Size(111, 30);
             lblTransferFileName.TabIndex = 2;
-            lblTransferFileName.Text = "Video_HoiThao.mp4";
-            // 
-            // pictureBox2
-            // 
-            pictureBox2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            pictureBox2.Image = (Image)resources.GetObject("pictureBox2.Image");
-            pictureBox2.Location = new Point(34, 63);
-            pictureBox2.Name = "pictureBox2";
-            pictureBox2.Size = new Size(97, 112);
-            pictureBox2.SizeMode = PictureBoxSizeMode.AutoSize;
-            pictureBox2.TabIndex = 1;
-            pictureBox2.TabStop = false;
+            lblTransferFileName.Text = "Test.docx";
             // 
             // grpFileInfo
             // 
@@ -1103,10 +1102,11 @@
             // 
             // pictureBox1
             // 
-            pictureBox1.Image = Properties.Resources.Screenshot_2026_06_20_031745;
+            pictureBox1.Image = Properties.Resources.bin;
             pictureBox1.Location = new Point(15, 49);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(93, 134);
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
             // 
@@ -1195,6 +1195,7 @@
             pnlTotalFile.PerformLayout();
             grpTransfer.ResumeLayout(false);
             grpTransfer.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             pnlRemainTime.ResumeLayout(false);
             pnlRemainTime.PerformLayout();
             pnlState.ResumeLayout(false);
@@ -1203,7 +1204,6 @@
             pnlElapsed.PerformLayout();
             pnlSpeed.ResumeLayout(false);
             pnlSpeed.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             grpFileInfo.ResumeLayout(false);
             grpFileInfo.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
