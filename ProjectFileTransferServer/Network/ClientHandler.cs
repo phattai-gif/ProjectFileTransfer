@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ProjectFileTransferServer.Network
 {
@@ -17,12 +15,9 @@ namespace ProjectFileTransferServer.Network
         private StreamWriter writer;
         private FileManager fileManager;
 
-        // Bổ sung Action để truyền thông điệp log về cho UI
         private Action<string> logCallback;
-
         private Action onDisconnected;
 
-        // Đường dẫn lưu thông tin metadata (Tên người upload, ngày upload)
         private string metadataFilePath = "upload_metadata.txt";
 
         public ClientHandler(TcpClient client, Action<string> logCallback, Action onDisconnected)
@@ -43,6 +38,7 @@ namespace ProjectFileTransferServer.Network
             try
             {
                 string request;
+                // Vòng lặp chính luôn được giám sát chặt chẽ
                 while ((request = reader.ReadLine()) != null)
                 {
                     string[] parts = request.Split(Protocol.DELIMITER);
@@ -73,36 +69,31 @@ namespace ProjectFileTransferServer.Network
                         case "DELETE":
                             ProcessDelete(parts);
                             break;
+
                         case "GET_ONLINE":
-                            // Trả về số lượng người online hiện tại cho Client vừa hỏi
                             writer.WriteLine($"ONLINE_COUNT|{ServerManager.OnlineUsersCount}");
                             break;
-
                     }
                 }
             }
             catch (Exception ex)
             {
-                logCallback?.Invoke($"Client ngắt kết nối: {ex.Message}");
+                // Bắt trọn mọi lỗi mất kết nối Socket đột ngột của riêng Client này
+                logCallback?.Invoke($"[HỆ THỐNG] Ngắt kết nối đột ngột với một Client: {ex.Message}");
             }
             finally
             {
-                onDisconnected?.Invoke();
-
-                reader.Close();
-                writer.Close();
-                stream.Close();
-                client.Close();
+                // Ép giải phóng tài nguyên dứt điểm để không ảnh hưởng đến các máy Client khác
+                CloseConnection();
             }
         }
 
-        //Connect
         private void ProcessConnect()
         {
             logCallback?.Invoke("Một Client vừa kết nối thành công.");
             writer.WriteLine("CONNECT_OK");
         }
-        //Delete file có phân quyền ai up người đó mới được xóa, người khác không được xóa
+
         private void ProcessDelete(string[] parts)
         {
             if (parts.Length < 3)
@@ -111,7 +102,6 @@ namespace ProjectFileTransferServer.Network
                 return;
             }
 
-            // Chuẩn hóa chuỗi dữ liệu đầu vào loại bỏ khoảng trắng thừa
             string fileToDelete = parts[1].Trim();
             string requestUser = parts[2].Trim();
 
@@ -120,7 +110,6 @@ namespace ProjectFileTransferServer.Network
             string currentOwner = "Hệ thống";
             bool fileExistsInMeta = false;
 
-            // BƯỚC 1: Tìm chủ sở hữu đích thực của file trong Metadata (Lấy bản ghi cuối cùng giống GetMetadata)
             try
             {
                 if (File.Exists(metadataFilePath))
@@ -143,7 +132,6 @@ namespace ProjectFileTransferServer.Network
                 logCallback?.Invoke($"[DELETE ERROR] Lỗi đọc danh sách phân quyền: {ex.Message}");
             }
 
-            // BƯỚC 2: Kiểm tra quyền sở hữu nghiêm ngặt (Không phân biệt chữ hoa/thường)
             bool isOwner = currentOwner.Equals(requestUser, StringComparison.OrdinalIgnoreCase);
 
             if (!isOwner)
@@ -153,12 +141,12 @@ namespace ProjectFileTransferServer.Network
                 return;
             }
 
-            // BƯỚC 3: Tiến hành tìm và xóa file vật lý trên ổ cứng TRƯỚC
             string physicalPath = "";
             try
             {
-                // Quét thông minh tự động toàn bộ thư mục chạy và thư mục con để tìm vị trí chính xác của file
-                string[] foundFiles = Directory.GetFiles(Application.StartupPath, fileToDelete, SearchOption.AllDirectories);
+                // Thay thế Application.StartupPath bằng AppDomain để tương thích .NET Core / WinForms mới
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                string[] foundFiles = Directory.GetFiles(basePath, fileToDelete, SearchOption.AllDirectories);
                 if (foundFiles.Length > 0)
                 {
                     physicalPath = foundFiles[0];
@@ -166,14 +154,14 @@ namespace ProjectFileTransferServer.Network
             }
             catch { }
 
-            // Phương án dự phòng nếu quét tự động gặp lỗi quyền truy cập thư mục
             if (string.IsNullOrEmpty(physicalPath) || !File.Exists(physicalPath))
             {
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
                 string[] probablePaths = new string[]
                 {
-            Path.Combine(Application.StartupPath, fileToDelete),
-            Path.Combine(Application.StartupPath, "storage", "uploads", fileToDelete),
-            Path.Combine(Application.StartupPath, "server", "storage", "uploads", fileToDelete)
+                    Path.Combine(basePath, fileToDelete),
+                    Path.Combine(basePath, "storage", "uploads", fileToDelete),
+                    Path.Combine(basePath, "server", "storage", "uploads", fileToDelete)
                 };
                 foreach (string p in probablePaths)
                 {
@@ -200,12 +188,10 @@ namespace ProjectFileTransferServer.Network
             }
             else
             {
-                // Nếu không thấy file vật lý nhưng vẫn chạy lệnh này, có thể file đã bị xóa thủ công trước đó
                 logCallback?.Invoke($"[DELETE WARNING] File vật lý không tồn tại sẵn trên ổ cứng hệ thống.");
                 isPhysicalDeleted = true;
             }
 
-            // BƯỚC 4: File vật lý đã sạch, tiến hành xóa dòng lịch sử trong metadata và phản hồi Client
             if (isPhysicalDeleted)
             {
                 try
@@ -218,7 +204,6 @@ namespace ProjectFileTransferServer.Network
                         {
                             if (string.IsNullOrWhiteSpace(line)) continue;
                             string[] metaParts = line.Split('|');
-                            // Loại bỏ hoàn toàn mọi dòng lịch sử liên quan đến file này
                             if (metaParts.Length >= 1 && metaParts[0].Trim().Equals(fileToDelete, StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
@@ -244,7 +229,6 @@ namespace ProjectFileTransferServer.Network
             }
         }
 
-        //Upload
         private void ReceiveFile(string[] parts)
         {
             if (parts.Length < 3)
@@ -258,13 +242,16 @@ namespace ProjectFileTransferServer.Network
             string uploader = "Hệ thống";
             if (parts.Length > 3) uploader = parts[3];
 
-            //  Lấy Tên người dùng từ vị trí cuối cùng do Client gửi lên
             if (parts.Length >= 5)
             {
-                uploader = parts[4]; // Vị trí số 4 là Username
+                uploader = parts[4];
             }
 
             logCallback?.Invoke($"Nhận yêu cầu UPLOAD file: {fileName} ({fileSize} bytes) từ [{uploader}].");
+
+            // Tạo biến quản lý đường dẫn để thực hiện dọn dẹp file lỗi nếu đứt mạng
+            string serverStoragePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Storage");
+            string physicalPath = Path.Combine(serverStoragePath, fileName);
 
             try
             {
@@ -281,8 +268,9 @@ namespace ProjectFileTransferServer.Network
                         int bytesToRead = (int)Math.Min(buffer.Length, fileSize - totalBytesRead);
                         bytesRead = stream.Read(buffer, 0, bytesToRead);
 
+                        // MẠNG BỊ ĐỨT GIỮA CHỪNG: Kích hoạt ngoại lệ giải phóng luồng ngay lập tức
                         if (bytesRead == 0)
-                            throw new Exception("Mạng đứt quãng.");
+                            throw new Exception("Kết nối mạng bị ngắt quãng đột ngột từ phía Client.");
 
                         fs.Write(buffer, 0, bytesRead);
                         totalBytesRead += bytesRead;
@@ -290,24 +278,16 @@ namespace ProjectFileTransferServer.Network
                 }
 
                 // Kiểm tra cờ tự hủy
-                if (parts.Length > 5)
+                if (parts.Length > 5 && parts[5] == "1")
                 {
-                    if (parts[5] == "1")
+                    string securePath = physicalPath + ".auto_delete";
+                    if (File.Exists(physicalPath))
                     {
-                        // Lấy đường dẫn vật lý thực tế của file vừa tạo
-                        string serverStoragePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Storage");
-                        string physicalPath = Path.Combine(serverStoragePath, fileName);
-                        string securePath = physicalPath + ".auto_delete";
-
-                        if (File.Exists(physicalPath))
-                        {
-                            File.Move(physicalPath, securePath);
-                            logCallback?.Invoke($"[HỘP ĐEN] Đã kích hoạt chế độ tự hủy cho file: {fileName}");
-                        }
+                        File.Move(physicalPath, securePath);
+                        logCallback?.Invoke($"[HỘP ĐEN] Đã kích hoạt chế độ tự hủy cho file: {fileName}");
                     }
                 }
 
-                // Lưu thông tin người Upload vào file Metadata
                 SaveMetadata(fileName, uploader);
 
                 writer.WriteLine(Protocol.UPLOAD_SUCCESS);
@@ -316,12 +296,25 @@ namespace ProjectFileTransferServer.Network
             }
             catch (Exception ex)
             {
-                logCallback?.Invoke($"[UPLOAD] Thất bại file {fileName}: {ex.Message}");
+                logCallback?.Invoke($"[UPLOAD FATAL] Thất bại file {fileName}: {ex.Message}");
                 writer.WriteLine(Protocol.UPLOAD_ERROR);
+
+                // DỌN DẸP FILE RÁC: Nếu đang tải mà đứt mạng, xóa file tải dở để giải phóng bộ nhớ
+                try
+                {
+                    if (File.Exists(physicalPath))
+                    {
+                        File.Delete(physicalPath);
+                        logCallback?.Invoke($"[HỆ THỐNG] Đã dọn dẹp file lỗi '{fileName}' do sự cố đứt mạng.");
+                    }
+                }
+                catch { }
+
+                // Đẩy lỗi ra ngoài để hàm HandleClient() đóng hẳn kết nối chết này lại
+                throw;
             }
         }
 
-        //Download
         private void SendFile(string[] parts)
         {
             if (parts.Length < 2)
@@ -337,7 +330,6 @@ namespace ProjectFileTransferServer.Network
             string securePath = "";
             bool isSecureFileExists = false;
 
-            // KIỂM TRA: Nếu tên file Client gửi lên ĐÃ CÓ SẴN đuôi .auto_delete
             if (fileName.EndsWith(".auto_delete"))
             {
                 securePath = Path.Combine(serverStoragePath, fileName);
@@ -390,7 +382,6 @@ namespace ProjectFileTransferServer.Network
                         stream.Flush();
                     }
 
-                    // Thực hiện xóa vĩnh viễn file trên ổ cứng Server
                     try
                     {
                         File.Delete(securePath);
@@ -421,26 +412,23 @@ namespace ProjectFileTransferServer.Network
             catch (Exception ex)
             {
                 logCallback?.Invoke($"[DOWNLOAD] Lỗi khi đang truyền file {fileName}: {ex.Message}");
+                throw;
             }
         }
 
-        //List
         private void SendFileList()
         {
             logCallback?.Invoke("[LIST] Client đang yêu cầu lấy danh sách file...");
 
             try
             {
-                // 1. Lấy danh sách file hiện có từ fileManager
                 string[] files = fileManager.GetFileListWithSize();
                 StringBuilder response = new StringBuilder(Protocol.LIST_SUCCESS);
 
-                // 2. Duyệt qua từng file để bóc tách và ghép chuỗi dữ liệu
                 foreach (string file in files)
                 {
                     if (string.IsNullOrEmpty(file)) continue;
 
-                    // Tách các thành phần của file
                     string[] fileInfo = file.Split('#');
                     string fName = fileInfo[0];
 
@@ -450,7 +438,6 @@ namespace ProjectFileTransferServer.Network
                         fSize = fileInfo[1];
                     }
 
-                    // 3. Đọc thông tin người upload thực tế từ file Metadata
                     var meta = GetMetadata(fName);
 
                     string uploader = "Hệ thống";
@@ -463,7 +450,6 @@ namespace ProjectFileTransferServer.Network
                         uploader = fileInfo[2];
                     }
 
-                    // 4. XỬ LÝ NGÀY THÁNG DỨT ĐIỂM: Ép cứng mốc cố định cho file cũ không có thông tin
                     string date = "";
                     if (!string.IsNullOrEmpty(meta.UploadDate))
                     {
@@ -475,18 +461,14 @@ namespace ProjectFileTransferServer.Network
                     }
                     else
                     {
-                        // Nếu không tìm thấy metadata của file cũ, giữ nguyên mốc thời gian cố định này khi refresh
                         date = "28/06/2026 00:00";
                     }
 
                     string path = $"/server/storage/uploads/{fName}";
-
-                    // 5. Ghép chuỗi theo đúng cấu trúc Client đang chờ
                     string fileData = $"{fName}#{fSize}#{uploader}#{date}#{path}";
                     response.Append(Protocol.DELIMITER).Append(fileData);
                 }
 
-                // 6. Gửi toàn bộ chuỗi phản hồi về cho Client qua Stream/Socket
                 writer.WriteLine(response.ToString());
                 writer.Flush();
 
@@ -495,10 +477,10 @@ namespace ProjectFileTransferServer.Network
             catch (Exception ex)
             {
                 logCallback?.Invoke($"[ERROR] Lỗi gửi danh sách file: {ex.Message}");
+                throw;
             }
         }
 
-        //Hash
         private void ProcessHash(string[] parts)
         {
             if (parts.Length < 2)
@@ -528,18 +510,15 @@ namespace ProjectFileTransferServer.Network
             {
                 logCallback?.Invoke($"[HASH] Lỗi khi xử lý tính toán file: {ex.Message}");
                 writer.WriteLine(Protocol.HASH_ERROR);
+                throw;
             }
         }
 
-        // ========================================================================
-        // CÁC HÀM HỖ TRỢ LƯU VÀ ĐỌC THÔNG TIN NGƯỜI DÙNG (METADATA)
-        // ========================================================================
         private void SaveMetadata(string fileName, string uploader)
         {
             try
             {
                 string date = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-                // Ghi vào file txt: Tên file | Tên người dùng | Ngày tháng
                 File.AppendAllText(metadataFilePath, $"{fileName}|{uploader}|{date}\n", Encoding.UTF8);
             }
             catch { }
@@ -558,7 +537,6 @@ namespace ProjectFileTransferServer.Network
                     {
                         if (string.IsNullOrWhiteSpace(line)) continue;
                         string[] parts = line.Split('|');
-                        // Nếu tìm thấy file, lấy thông tin ra (Lấy bản mới nhất)
                         if (parts.Length == 3 && parts[0] == fileName)
                         {
                             uploader = parts[1];
@@ -570,9 +548,7 @@ namespace ProjectFileTransferServer.Network
             catch { }
             return (uploader, uploadDate);
         }
-        // ========================================================================
-        // HÀM BỔ TRỢ ĐỂ SERVER GỬI TIN NHẮN TRỰC TIẾP XUỐNG CLIENT (BROADCAST)
-        // ========================================================================
+
         public void SendMessageDirect(string message)
         {
             try
@@ -584,7 +560,19 @@ namespace ProjectFileTransferServer.Network
             }
             catch { }
         }
+
+        // Tách hàm giải phóng tài nguyên an toàn ra khối riêng biệt để tái sử dụng
+        private void CloseConnection()
+        {
+            try
+            {
+                onDisconnected?.Invoke();
+                reader?.Close();
+                writer?.Close();
+                stream?.Close();
+                client?.Close();
+            }
+            catch { }
+        }
     }
-
-
 }
