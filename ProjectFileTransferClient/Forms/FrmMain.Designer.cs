@@ -50,6 +50,7 @@
             lblTitle1 = new Label();
             lblTitle = new Label();
             pnlTopBar = new Panel();
+            btnSelfDestruct = new Button();
             btnDeleteList = new Button();
             btnRefreshList = new Button();
             txtSearch = new TextBox();
@@ -401,6 +402,7 @@
             // pnlTopBar
             // 
             pnlTopBar.BackColor = Color.WhiteSmoke;
+            pnlTopBar.Controls.Add(btnSelfDestruct);
             pnlTopBar.Controls.Add(btnDeleteList);
             pnlTopBar.Controls.Add(btnRefreshList);
             pnlTopBar.Controls.Add(txtSearch);
@@ -411,15 +413,27 @@
             pnlTopBar.Size = new Size(1329, 80);
             pnlTopBar.TabIndex = 1;
             // 
+            // btnSelfDestruct
+            // 
+            btnSelfDestruct.BackColor = Color.Aquamarine;
+            btnSelfDestruct.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnSelfDestruct.Location = new Point(674, 9);
+            btnSelfDestruct.Name = "btnSelfDestruct";
+            btnSelfDestruct.Size = new Size(167, 61);
+            btnSelfDestruct.TabIndex = 7;
+            btnSelfDestruct.Text = "SELF-DESTRUCT: OFF";
+            btnSelfDestruct.UseVisualStyleBackColor = false;
+            btnSelfDestruct.Click += btnSelfDestruct_Click;
+            // 
             // btnDeleteList
             // 
             btnDeleteList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnDeleteList.BackColor = Color.Crimson;
             btnDeleteList.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnDeleteList.ForeColor = SystemColors.Control;
-            btnDeleteList.Location = new Point(586, 11);
+            btnDeleteList.Location = new Point(524, 11);
             btnDeleteList.Name = "btnDeleteList";
-            btnDeleteList.Size = new Size(161, 59);
+            btnDeleteList.Size = new Size(144, 59);
             btnDeleteList.TabIndex = 6;
             btnDeleteList.Text = " DELETE FILE";
             btnDeleteList.UseVisualStyleBackColor = false;
@@ -430,9 +444,9 @@
             btnRefreshList.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnRefreshList.BackColor = Color.RoyalBlue;
             btnRefreshList.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnRefreshList.Location = new Point(401, 10);
+            btnRefreshList.Location = new Point(380, 10);
             btnRefreshList.Name = "btnRefreshList";
-            btnRefreshList.Size = new Size(178, 59);
+            btnRefreshList.Size = new Size(138, 59);
             btnRefreshList.TabIndex = 5;
             btnRefreshList.Text = "🔄 REFRESH";
             btnRefreshList.UseVisualStyleBackColor = false;
@@ -441,11 +455,11 @@
             // txtSearch
             // 
             txtSearch.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            txtSearch.Location = new Point(772, 20);
+            txtSearch.Location = new Point(863, 20);
             txtSearch.Multiline = true;
             txtSearch.Name = "txtSearch";
             txtSearch.PlaceholderText = "Tìm kiếm file...";
-            txtSearch.Size = new Size(395, 48);
+            txtSearch.Size = new Size(301, 48);
             txtSearch.TabIndex = 3;
             txtSearch.TextChanged += txtSearch_TextChanged;
             // 
@@ -454,7 +468,7 @@
             btnDownloadFile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnDownloadFile.BackColor = Color.FromArgb(255, 128, 0);
             btnDownloadFile.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnDownloadFile.Location = new Point(218, 9);
+            btnDownloadFile.Location = new Point(200, 9);
             btnDownloadFile.Name = "btnDownloadFile";
             btnDownloadFile.Size = new Size(174, 59);
             btnDownloadFile.TabIndex = 4;
@@ -469,7 +483,7 @@
             btnUploaddown.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnUploaddown.Location = new Point(17, 10);
             btnUploaddown.Name = "btnUploaddown";
-            btnUploaddown.Size = new Size(189, 59);
+            btnUploaddown.Size = new Size(177, 59);
             btnUploaddown.TabIndex = 3;
             btnUploaddown.Text = "📤 UPLOAD FILE";
             btnUploaddown.UseVisualStyleBackColor = false;
@@ -481,9 +495,9 @@
             btnLogout2.BackColor = Color.Red;
             btnLogout2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnLogout2.ForeColor = SystemColors.ButtonHighlight;
-            btnLogout2.Location = new Point(1403, 9);
+            btnLogout2.Location = new Point(1435, 9);
             btnLogout2.Name = "btnLogout2";
-            btnLogout2.Size = new Size(169, 62);
+            btnLogout2.Size = new Size(137, 62);
             btnLogout2.TabIndex = 4;
             btnLogout2.Text = "Đăng xuất";
             btnLogout2.UseVisualStyleBackColor = false;
@@ -1306,6 +1320,6 @@
         private Button btnDownload;
         private Button btnUpload;
         private Button btnDeleteList;
-
+        private Button btnSelfDestruct;
     }
 }

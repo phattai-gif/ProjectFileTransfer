@@ -289,6 +289,24 @@ namespace ProjectFileTransferServer.Network
                     }
                 }
 
+                // Kiểm tra cờ tự hủy
+                if (parts.Length > 5)
+                {
+                    if (parts[5] == "1")
+                    {
+                        // Lấy đường dẫn vật lý thực tế của file vừa tạo
+                        string serverStoragePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Storage");
+                        string physicalPath = Path.Combine(serverStoragePath, fileName);
+                        string securePath = physicalPath + ".auto_delete";
+
+                        if (File.Exists(physicalPath))
+                        {
+                            File.Move(physicalPath, securePath);
+                            logCallback?.Invoke($"[HỘP ĐEN] Đã kích hoạt chế độ tự hủy cho file: {fileName}");
+                        }
+                    }
+                }
+
                 // Lưu thông tin người Upload vào file Metadata
                 SaveMetadata(fileName, uploader);
 
@@ -313,32 +331,89 @@ namespace ProjectFileTransferServer.Network
             }
 
             string fileName = parts[1];
+            string serverStoragePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Storage");
 
-            if (!fileManager.FileExists(fileName))
+            string physicalPath = "";
+            string securePath = "";
+            bool isSecureFileExists = false;
+
+            // KIỂM TRA: Nếu tên file Client gửi lên ĐÃ CÓ SẴN đuôi .auto_delete
+            if (fileName.EndsWith(".auto_delete"))
+            {
+                securePath = Path.Combine(serverStoragePath, fileName);
+                isSecureFileExists = File.Exists(securePath);
+            }
+            else
+            {
+                physicalPath = Path.Combine(serverStoragePath, fileName);
+                securePath = physicalPath + ".auto_delete";
+                isSecureFileExists = File.Exists(securePath);
+            }
+
+            bool isNormalFileExists = fileManager.FileExists(fileName);
+
+            if (isNormalFileExists == false && isSecureFileExists == false)
             {
                 logCallback?.Invoke($"[DOWNLOAD] Thất bại: Client yêu cầu file '{fileName}' không tồn tại.");
                 writer.WriteLine(Protocol.DOWNLOAD_ERROR);
                 return;
             }
 
-            long fileSize = fileManager.GetFileSize(fileName);
+            long fileSize = 0;
+            if (isSecureFileExists == true)
+            {
+                FileInfo fi = new FileInfo(securePath);
+                fileSize = fi.Length;
+            }
+            else
+            {
+                fileSize = fileManager.GetFileSize(fileName);
+            }
+
             logCallback?.Invoke($"[DOWNLOAD] Đang gửi file '{fileName}' ({fileSize} bytes) cho Client...");
 
             try
             {
                 writer.WriteLine($"{Protocol.DOWNLOAD_SUCCESS}{Protocol.DELIMITER}{fileSize}");
 
-                using (FileStream fs = fileManager.OpenFileStreamForRead(fileName))
+                if (isSecureFileExists == true)
                 {
-                    byte[] buffer = new byte[Protocol.BUFFER_SIZE];
-                    int bytesRead;
-
-                    while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                    using (FileStream fs = new FileStream(securePath, FileMode.Open, FileAccess.Read))
                     {
-                        stream.Write(buffer, 0, bytesRead);
+                        byte[] buffer = new byte[Protocol.BUFFER_SIZE];
+                        int bytesRead;
+
+                        while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            stream.Write(buffer, 0, bytesRead);
+                        }
+                        stream.Flush();
                     }
 
-                    stream.Flush();
+                    // Thực hiện xóa vĩnh viễn file trên ổ cứng Server
+                    try
+                    {
+                        File.Delete(securePath);
+                        logCallback?.Invoke($"[HỘP ĐEN] File '{fileName}' đã tự hủy vĩnh viễn trên Server.");
+                    }
+                    catch (Exception exDel)
+                    {
+                        logCallback?.Invoke($"[HỘP ĐEN] Lỗi thực thi tự hủy file: {exDel.Message}");
+                    }
+                }
+                else
+                {
+                    using (FileStream fs = fileManager.OpenFileStreamForRead(fileName))
+                    {
+                        byte[] buffer = new byte[Protocol.BUFFER_SIZE];
+                        int bytesRead;
+
+                        while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            stream.Write(buffer, 0, bytesRead);
+                        }
+                        stream.Flush();
+                    }
                 }
 
                 logCallback?.Invoke($"[DOWNLOAD] Thành công: Đã gửi xong file '{fileName}'.");

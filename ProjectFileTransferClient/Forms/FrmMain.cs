@@ -33,6 +33,9 @@ namespace ProjectFileTransferClient.Forms
         // Từ điển quản lý bộ nhớ tiến trình (Key là tên file)
         private Dictionary<string, TransferProgressState> fileProgresses = new Dictionary<string, TransferProgressState>();
 
+        // Chế độ tự hủy file
+        bool isSelfDestructActive = false;
+
         public FrmMain(ClientManager manager, FrmConnect connectForm)
         {
             InitializeComponent();
@@ -327,7 +330,11 @@ namespace ProjectFileTransferClient.Forms
             if (open.ShowDialog() == DialogResult.OK)
             {
                 string localFilePath = open.FileName;
-                string fileName = Path.GetFileName(localFilePath) ?? "unknown";
+                string fileName = Path.GetFileName(localFilePath);
+                if (fileName == null)
+                {
+                    fileName = "unknown";
+                }
 
                 btnUploaddown.Enabled = false;
 
@@ -359,7 +366,8 @@ namespace ProjectFileTransferClient.Forms
                         FileInfo fileInfo = new FileInfo(localFilePath);
                         long fileSize = fileInfo.Length;
 
-                        this.Invoke(new Action(() => {
+                        this.Invoke(new Action(() =>
+                        {
                             string pureFileName = Path.GetFileName(fileName);
                             string iconKey = GetIconKey(pureFileName);
                             object obj = Properties.Resources.ResourceManager.GetObject(iconKey);
@@ -370,7 +378,15 @@ namespace ProjectFileTransferClient.Forms
                             }
                         }));
 
-                        string cmd = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}{Protocol.DELIMITER}{clientHash}{Protocol.DELIMITER}{FrmConnect.GlobalUsername}";
+                        // Tự hủy
+                        string flagSelfDestruct = "0";
+                        if (isSelfDestructActive == true)
+                        {
+                            flagSelfDestruct = "1";
+                        }
+
+                        // Thế chính xác vào chuỗi cmd theo cấu trúc của bạn:
+                        string cmd = $"{Protocol.UPLOAD}{Protocol.DELIMITER}{fileName}{Protocol.DELIMITER}{fileSize}{Protocol.DELIMITER}{clientHash}{Protocol.DELIMITER}{FrmConnect.GlobalUsername}{Protocol.DELIMITER}{flagSelfDestruct}";
                         clientManager.SendMessage(cmd);
 
                         string? response = clientManager.ReceiveMessage();
@@ -534,8 +550,9 @@ namespace ProjectFileTransferClient.Forms
 
                     while (stream.DataAvailable) { clientManager.ReceiveMessage(); }
 
-                    this.Invoke(new Action(() => {
-                        string pureFileName = Path.GetFileName(fileName); 
+                    this.Invoke(new Action(() =>
+                    {
+                        string pureFileName = Path.GetFileName(fileName);
                         string iconKey = GetIconKey(pureFileName);
                         object obj = Properties.Resources.ResourceManager.GetObject(iconKey);
                         if (obj != null && obj is Image)
@@ -959,10 +976,29 @@ namespace ProjectFileTransferClient.Forms
             if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".bmp") return "png";
             if (ext == ".pdf") return "pdf";
             if (ext == ".txt" || ext == ".log" || ext == ".ini") return "txt";
-            if (ext == ".bin" || ext == ".dat") return "bin"; 
+            if (ext == ".bin" || ext == ".dat") return "bin";
 
             // Mặc định trả về định dạng text nếu gặp đuôi lạ khác
             return "txt";
+        }
+
+        private void btnSelfDestruct_Click(object sender, EventArgs e)
+        {
+            // Đảo trạng thái true <-> false mỗi khi click
+            isSelfDestructActive = !isSelfDestructActive;
+
+            if (isSelfDestructActive)
+            {
+                btnSelfDestruct.Text = "SELF-DISTRUCT: ON";
+                btnSelfDestruct.BackColor = Color.Red;       // Đổi sang màu đỏ để cảnh báo
+                btnSelfDestruct.ForeColor = Color.White;
+            }
+            else
+            {
+                btnSelfDestruct.Text = "SELF-DISTRUCT: OFF";
+                btnSelfDestruct.BackColor = SystemColors.Control; // Trả về màu nút bấm mặc định
+                btnSelfDestruct.ForeColor = Color.Black;
+            }
         }
     }
 }
