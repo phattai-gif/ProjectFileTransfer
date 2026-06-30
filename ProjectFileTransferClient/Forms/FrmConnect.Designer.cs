@@ -74,7 +74,6 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1080, 2);
             panel1.TabIndex = 2;
-            panel1.Paint += panel1_Paint;
             // 
             // grpConnection
             // 
@@ -97,7 +96,6 @@
             grpConnection.TabIndex = 3;
             grpConnection.TabStop = false;
             grpConnection.Text = "🖥️ THÔNG TIN KẾT NỐI";
-            grpConnection.Enter += grpConnection_Enter;
             // 
             // lblStatus1
             // 
@@ -118,7 +116,6 @@
             lblStatus.Size = new Size(210, 32);
             lblStatus.TabIndex = 8;
             lblStatus.Text = "🔴 Disconnected";
-            lblStatus.Click += lblStatus_Click;
             // 
             // btnDisconnect
             // 
@@ -157,7 +154,6 @@
             txtUsername.Size = new Size(850, 46);
             txtUsername.TabIndex = 5;
             txtUsername.Text = "Client";
-            txtUsername.TextChanged += txtUsername_TextChanged;
             // 
             // lblUsername
             // 
@@ -198,7 +194,6 @@
             txtIP.RightToLeft = RightToLeft.No;
             txtIP.Size = new Size(850, 45);
             txtIP.TabIndex = 1;
-            txtIP.TextChanged += txtIP_TextChanged;
             // 
             // lblIP
             // 
@@ -209,7 +204,6 @@
             lblIP.Size = new Size(244, 32);
             lblIP.TabIndex = 0;
             lblIP.Text = "🌐Địa chỉ IP Server:";
-            lblIP.Click += lblIP_Click;
             // 
             // FrmConnect
             // 
@@ -225,7 +219,6 @@
             Name = "FrmConnect";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "File Transfer Client";
-            Load += FrmConnect_Load_1;
             grpConnection.ResumeLayout(false);
             grpConnection.PerformLayout();
             ResumeLayout(false);

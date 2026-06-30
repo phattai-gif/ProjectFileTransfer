@@ -17,55 +17,6 @@ namespace ProjectFileTransferClient
             clientManager = new ClientManager();
         }
 
-        private void FrmConnect_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void FrmConnect_Load_1(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void grpConnection_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblIP_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtIP_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblStatus_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblicon1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtUsername_TextChanged(object sender, EventArgs e)
-        {
-
-        }
         //Tao hàm connect
         private void btnConnect_Click(object? sender, EventArgs e)
         {

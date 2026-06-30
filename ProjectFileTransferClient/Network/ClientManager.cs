@@ -120,30 +120,19 @@ namespace ProjectFileTransferClient.Network
                 long fileSize = file.Length;
 
                 // Gửi lệnh upload
-                writer.WriteLine(
-                    $"{Protocol.UPLOAD}" +
-                    $"{Protocol.DELIMITER}" +
-                    $"{fileName}" +
-                    $"{Protocol.DELIMITER}" +
-                    $"{fileSize}");
+                writer.WriteLine($"{Protocol.UPLOAD}" + $"{Protocol.DELIMITER}" + $"{fileName}" + $"{Protocol.DELIMITER}" + $"{fileSize}");
 
                 // Lấy stream
-                NetworkStream stream =
-                    client.GetStream();
+                NetworkStream stream = client.GetStream();
 
                 // Gửi dữ liệu file
-                using (FileStream fs =
-                       new FileStream(filePath,
-                       FileMode.Open,
-                       FileAccess.Read))
+                using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
-                    byte[] buffer =
-                        new byte[Protocol.BUFFER_SIZE];
+                    byte[] buffer = new byte[Protocol.BUFFER_SIZE];
 
                     int bytesRead;
 
-                    while ((bytesRead =
-                            fs.Read(buffer, 0, buffer.Length)) > 0)
+                    while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
                     {
                         stream.Write(buffer, 0, bytesRead);
                     }
@@ -162,8 +151,7 @@ namespace ProjectFileTransferClient.Network
 
                     MessageBox.Show("Read = " + response);
 
-                } while (response != null &&
-                         response.StartsWith("LIST_SUCCESS"));
+                } while (response != null && response.StartsWith("LIST_SUCCESS"));
 
                 return response == Protocol.UPLOAD_SUCCESS;
             }
@@ -181,17 +169,13 @@ namespace ProjectFileTransferClient.Network
             try
             {
                 // Gửi yêu cầu download
-                writer?.WriteLine(
-                    $"{Protocol.DOWNLOAD}" +
-                    $"{Protocol.DELIMITER}" +
-                    $"{fileName}");
+                writer?.WriteLine($"{Protocol.DOWNLOAD}" + $"{Protocol.DELIMITER}" + $"{fileName}");
 
                 // Nhận phản hồi
                 string response = reader?.ReadLine() ?? "";
                 MessageBox.Show( "Length = " + response.Length +"\n" +response);
                 // Tách dữ liệu
-                string[] parts =
-                    response.Split(Protocol.DELIMITER);
+                string[] parts = response.Split(Protocol.DELIMITER);
 
                 // Kiểm tra dữ liệu trả về
                 if (parts.Length < 2)
@@ -206,59 +190,37 @@ namespace ProjectFileTransferClient.Network
                     return false;
                 }
 
-                long fileSize =
-                    long.Parse(parts[1]);
+                long fileSize = long.Parse(parts[1]);
 
-                MessageBox.Show(
-                    "FILE SIZE = " + fileSize);
+                MessageBox.Show("FILE SIZE = " + fileSize);
 
                 long totalRead = 0;
 
-                byte[] buffer =
-                    new byte[Protocol.BUFFER_SIZE];
+                byte[] buffer = new byte[Protocol.BUFFER_SIZE];
 
-                NetworkStream stream =
-                    client!.GetStream();
+                NetworkStream stream = client!.GetStream();
 
-                using (FileStream fs =
-                       new FileStream(savePath,
-                                      FileMode.Create,
-                                      FileAccess.Write))
+                using (FileStream fs = new FileStream(savePath, FileMode.Create, FileAccess.Write))
                 {
                     while (totalRead < fileSize)
                     {
-                        int bytesToRead =
-                            (int)Math.Min(
-                                buffer.Length,
-                                fileSize - totalRead);
+                        int bytesToRead = (int)Math.Min(buffer.Length, fileSize - totalRead);
 
-                        int bytesRead =
-                            stream.Read(
-                                buffer,
-                                0,
-                                bytesToRead);
+                        int bytesRead = stream.Read(buffer, 0, bytesToRead);
 
                         if (bytesRead <= 0)
                         {
-                            MessageBox.Show(
-                                "bytesRead = 0");
+                            MessageBox.Show("bytesRead = 0");
                             break;
                         }
 
-                        fs.Write(
-                            buffer,
-                            0,
-                            bytesRead);
+                        fs.Write(buffer, 0, bytesRead);
 
                         totalRead += bytesRead;
                     }
                 }
 
-                MessageBox.Show(
-                    "Đã nhận: " +
-                    totalRead +
-                    " / " +
-                    fileSize);
+                MessageBox.Show("Đã nhận: " + totalRead + " / " + fileSize);
 
                 return totalRead == fileSize;
             }

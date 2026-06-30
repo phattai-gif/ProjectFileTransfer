@@ -969,7 +969,7 @@ namespace ProjectFileTransferClient.Forms
         {
             string ext = Path.GetExtension(fileName).ToLower();
 
-            // Phân loại nhóm mở rộng về 7 định danh key chuẩn trong Resource
+            // Phân loại đuôi file để lấy icon tương ứng
             if (ext == ".xls" || ext == ".xlsx" || ext == ".csv") return "xlsx";
             if (ext == ".doc" || ext == ".docx") return "docx";
             if (ext == ".zip" || ext == ".rar" || ext == ".7z") return "zip";

@@ -19,9 +19,6 @@ namespace ProjectFileTransferServer.Network
         // Biến static để lưu tổng số người online, các file khác đều đọc được
         public static int OnlineUsersCount = 0;
 
-        ////Thêm danh sách ActiveHandlers
-        //public static List<ClientHandler> ActiveHandlers = new List<ClientHandler>();
-//=========================================================================================================
         // Thêm tham số nhận callback danh sách client vào hàm StartServer
         public void StartServer(Action<string> logCallback, Action<List<string>> clientListCallback)
         {

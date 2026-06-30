@@ -22,7 +22,7 @@ namespace ProjectFileTransferServer.Network
 
         private Action onDisconnected;
 
-        // 🌟 MỚI: Đường dẫn lưu thông tin metadata (Tên người upload, ngày upload)
+        // Đường dẫn lưu thông tin metadata (Tên người upload, ngày upload)
         private string metadataFilePath = "upload_metadata.txt";
 
         public ClientHandler(TcpClient client, Action<string> logCallback, Action onDisconnected)
